@@ -55,18 +55,20 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler)
 
-// Start server
-const PORT = process.env.PORT || 5000
-app.listen(PORT, () => {
-  console.log(`\n✅ Focusify Backend running on http://localhost:${PORT}`)
-  console.log(`📍 Frontend: ${process.env.FRONTEND_URL}`)
-  console.log(`🔒 Environment: ${process.env.NODE_ENV}\n`)
-
-  // Connect to Database after server starts
-  connectDB().catch((err) => {
-    console.error('Failed to connect to database:', err.message)
-  })
+// Connect to Database
+connectDB().catch((err) => {
+  console.error('Failed to connect to database:', err.message)
 })
+
+// Start server (only when running locally, not on Vercel)
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 5000
+  app.listen(PORT, () => {
+    console.log(`\n✅ Focusify Backend running on http://localhost:${PORT}`)
+    console.log(`📍 Frontend: ${process.env.FRONTEND_URL}`)
+    console.log(`🔒 Environment: ${process.env.NODE_ENV}\n`)
+  })
+}
 
 export default app
 

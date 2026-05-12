@@ -1,23 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
-  "functions": {
-    "src/server.js": {
-      "memory": 512,
-      "maxDuration": 30
-    }
-  },
-  "routes": [
+  "builds": [
     {
-      "src": "/api/(.*)",
-      "dest": "src/server.js"
-    },
-    {
-      "src": "/.*",
-      "dest": "src/server.js"
+      "src": "src/server.js",
+      "use": "@vercel/node"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/src/server.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/src/server.js"
+    }
+  ]
 }
