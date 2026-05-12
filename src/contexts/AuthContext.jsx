@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from 'react'
 import { authAPI } from '../services/api'
+import { performFullDataSync } from '../services/migration'
 
 export const AuthContext = createContext()
 
@@ -24,6 +25,9 @@ export const AuthProvider = ({ children }) => {
         const response = await authAPI.verify()
         setUser(response.data.user || JSON.parse(storedUser))
         setIsAuthenticated(true)
+        
+        // Sync backend data to localStorage on startup
+        await performFullDataSync()
       } else {
         setIsAuthenticated(false)
         setUser(null)
@@ -53,6 +57,10 @@ export const AuthProvider = ({ children }) => {
 
       setUser(userData)
       setIsAuthenticated(true)
+      
+      // Perform data sync after registration
+      await performFullDataSync()
+      
       return { success: true, user: userData }
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed'
@@ -76,6 +84,10 @@ export const AuthProvider = ({ children }) => {
 
       setUser(userData)
       setIsAuthenticated(true)
+      
+      // Perform data sync after login
+      await performFullDataSync()
+      
       return { success: true, user: userData }
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed'

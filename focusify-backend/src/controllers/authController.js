@@ -1,6 +1,5 @@
-import { User } from '../models/User.js'
-import { UserSettings } from '../models/UserSettings.js'
 import { generateTokens } from '../utils/jwt.js'
+import { db } from '../utils/dbFacade.js'
 
 export const register = async (req, res) => {
   try {
@@ -16,45 +15,33 @@ export const register = async (req, res) => {
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
-    })
+    const existingEmailUser = await db.findUserByEmail(email)
+    const existingUsernameUser = await db.findUserByUsername(username)
 
-    if (existingUser) {
-      return res.status(400).json({
-        error: existingUser.email === email ? 'Email already registered' : 'Username already taken'
-      })
+    if (existingEmailUser) {
+      return res.status(400).json({ error: 'Email already registered' })
+    }
+
+    if (existingUsernameUser) {
+      return res.status(400).json({ error: 'Username already taken' })
     }
 
     // Create user
-    const user = new User({
-      email,
-      username,
-      password
-    })
-
-    await user.save()
+    const user = await db.createUser(email, username, password)
 
     // Create default settings for user
-    const settings = new UserSettings({
-      user_id: user._id
-    })
-
-    await settings.save()
+    await db.createUserSettings(user._id || user.id)
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id.toString())
-
-    // Update last login
-    user.last_login = new Date()
-    await user.save()
+    const userId = user._id || user.id
+    const { accessToken, refreshToken } = generateTokens(userId.toString())
 
     res.status(201).json({
       success: true,
       token: accessToken,
       refreshToken: refreshToken,
       user: {
-        id: user._id,
+        id: userId,
         email: user.email,
         username: user.username,
         created_at: user.created_at
@@ -62,7 +49,7 @@ export const register = async (req, res) => {
     })
   } catch (error) {
     console.error('Register error:', error)
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: error.message || 'Registration failed' })
   }
 }
 
@@ -75,33 +62,33 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' })
     }
 
-    // Find user and get password field
-    const user = await User.findOne({ email }).select('+password')
+    // Find user
+    const user = await db.findUserByEmail(email)
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' })
     }
 
     // Compare passwords
-    const isPasswordValid = await user.comparePassword(password)
+    const isPasswordValid = await db.comparePassword(user.password, password)
 
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid email or password' })
     }
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id.toString())
+    const userId = user._id || user.id
+    const { accessToken, refreshToken } = generateTokens(userId.toString())
 
     // Update last login
-    user.last_login = new Date()
-    await user.save()
+    await db.updateLastLogin(userId)
 
     res.json({
       success: true,
       token: accessToken,
       refreshToken: refreshToken,
       user: {
-        id: user._id,
+        id: userId,
         email: user.email,
         username: user.username,
         created_at: user.created_at
@@ -109,7 +96,7 @@ export const login = async (req, res) => {
     })
   } catch (error) {
     console.error('Login error:', error)
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: error.message || 'Login failed' })
   }
 }
 
@@ -128,16 +115,17 @@ export const logout = async (req, res) => {
 
 export const verifyAuth = async (req, res) => {
   try {
-    const user = await User.findById(req.userId)
+    const user = await db.findUserById(req.userId)
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
+    const userId = user._id || user.id
     res.json({
       valid: true,
       user: {
-        id: user._id,
+        id: userId,
         email: user.email,
         username: user.username
       }

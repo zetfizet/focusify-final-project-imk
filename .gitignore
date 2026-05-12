@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment variables - NEVER PUSH CREDENTIALS
+.env
+.env.production
+.env.local
+.env.*.local
+focusify-backend/.env
+focusify-backend/.env.production
+focusify-backend/node_modules
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
