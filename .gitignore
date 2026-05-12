@@ -14,9 +14,10 @@ dist-ssr
 
 # Environment variables - NEVER PUSH CREDENTIALS
 .env
-.env.production
 .env.local
 .env.*.local
+# NOTE: .env.production is NOT ignored (frontend only, no secrets)
+# It contains VITE_API_URL for Vite build
 focusify-backend/.env
 focusify-backend/.env.production
 focusify-backend/node_modules
