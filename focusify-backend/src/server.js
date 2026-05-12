@@ -20,6 +20,9 @@ dotenv.config({ path: path.join(__dirname, '../.env') })
 
 const app = express()
 
+// Trust proxy (for Vercel and production environments behind proxy)
+app.set('trust proxy', 1)
+
 // Security Middleware
 app.use(helmet()) // Set security HTTP headers
 app.use(generalLimiter) // General rate limiting
