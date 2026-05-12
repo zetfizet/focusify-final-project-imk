@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Focusify – Session Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f5f9f7;--bg2:#eaf3ef;--card:#ffffff;--border:#d4e8df;--mint-soft:#e4f5ec;--sage-light:#a8d5be;--text:#1e3028;--text2:#4d7060;--text3:#8aab96;--accent:#3d9970;--sage:#6ba68a;--sage-deep:#4a876c;--shadow:0 2px 16px rgba(74,135,108,0.10);--radius:18px;--radius-sm:10px;--nav-h:68px;--transition:0.22s cubic-bezier(.4,0,.2,1)}
+[data-theme="dark"]{--bg:#111a15;--bg2:#182219;--card:#1d2e22;--border:#2b4035;--mint-soft:#243d2e;--sage-light:#4a7a62;--text:#e2f0e8;--text2:#8fcfad;--text3:#527a63;--accent:#5dbd8f;--sage-deep:#8fcfad;--shadow:0 2px 16px rgba(0,0,0,0.25)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;box-shadow:var(--shadow);transition:background var(--transition)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:1.45rem;color:var(--accent);text-decoration:none}
+.nav-logo .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{padding:7px 15px;border-radius:30px;font-size:.875rem;font-weight:500;color:var(--text2);text-decoration:none;transition:background var(--transition),color var(--transition)}
+.nav-links a:hover,.nav-links a.active{background:var(--mint-soft);color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.btn-nav-login{padding:8px 20px;border-radius:30px;background:var(--mint-soft);color:var(--accent);border:1.5px solid var(--sage-light);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;transition:all var(--transition);text-decoration:none}
+.btn-nav-login:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.theme-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all var(--transition)}
+main{padding-top:calc(var(--nav-h)+36px);padding-bottom:64px;max-width:760px;margin:0 auto;padding-left:28px;padding-right:28px}
+.page-hdr{margin-bottom:28px;animation:fadeUp .4s ease}
+.page-hdr h1{font-family:'DM Serif Display',serif;font-size:2rem;margin-bottom:6px}
+.page-hdr p{font-size:.9rem;color:var(--text2)}
+
+/* Steps indicator */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:28px;animation:fadeUp .45s ease .05s both}
+.step{display:flex;align-items:center;gap:8px;flex:1}
+.step-n{width:28px;height:28px;border-radius:50%;background:var(--border);color:var(--text3);font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step.done .step-n{background:var(--accent);color:#fff}
+.step.active .step-n{background:var(--accent);color:#fff;box-shadow:0 0 0 4px rgba(61,153,112,0.2)}
+.step-lbl{font-size:.78rem;font-weight:500;color:var(--text3)}
+.step.active .step-lbl{color:var(--accent);font-weight:600}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 8px}
+.step.done .step-line{background:var(--accent)}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);margin-bottom:18px;transition:background var(--transition),border-color var(--transition);animation:fadeUp .5s ease both}
+.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.12s}.card:nth-child(4){animation-delay:.18s}.card:nth-child(5){animation-delay:.24s}
+.sec-lbl{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* Duration type tabs */
+.dtabs{display:flex;gap:8px;margin-bottom:22px}
+.dtab{flex:1;padding:14px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg2);text-align:center;cursor:pointer;transition:all var(--transition);font-family:'DM Sans',sans-serif}
+.dtab:hover{border-color:var(--sage);background:var(--mint-soft)}
+.dtab.active{border-color:var(--accent);background:var(--accent);color:#fff}
+.dtab .dt{font-size:1rem;font-weight:700}
+.dtab .dl{font-size:.7rem;margin-top:2px;opacity:.78}
+
+/* Pomodoro options (Select Duration → Pomodoro) */
+.pomo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pomo-btn{padding:16px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg2);text-align:center;cursor:pointer;transition:all var(--transition);font-family:'DM Sans',sans-serif}
+.pomo-btn:hover{border-color:var(--accent);background:var(--mint-soft)}
+.pomo-btn.active{border-color:var(--accent);background:var(--mint-soft)}
+.pomo-btn .pm{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.pomo-btn .pl{font-size:.68rem;color:var(--text3);margin-top:3px}
+.pomo-break{margin-top:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text2)}
+
+/* Custom Duration slider */
+.custom-area{display:none;margin-top:4px}
+.custom-area.show{display:block}
+.cdisp{text-align:center;margin-bottom:16px}
+.cdisp .cdn{font-family:'DM Serif Display',serif;font-size:3.8rem;color:var(--accent);line-height:1}
+.cdisp .cdl{font-size:.78rem;color:var(--text3);margin-top:4px}
+input[type="range"]{width:100%;accent-color:var(--accent);height:6px;cursor:pointer}
+.rlabels{display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3);margin-top:5px}
+
+/* Ambience Settings */
+.amb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.amb-btn{padding:16px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg2);text-align:center;cursor:pointer;transition:all var(--transition);font-family:'DM Sans',sans-serif}
+.amb-btn:hover,.amb-btn.active{border-color:var(--accent);background:var(--mint-soft)}
+.amb-btn .ai{font-size:1.5rem;display:block;margin-bottom:5px}
+.amb-btn .al{font-size:.72rem;color:var(--text2);font-weight:500}
+.amb-none{grid-column:1/-1;padding:12px;border-radius:var(--radius-sm);border:1.5px dashed var(--border);background:var(--bg2);text-align:center;cursor:pointer;transition:all var(--transition);font-size:.82rem;color:var(--text3);font-family:'DM Sans',sans-serif}
+.amb-none.active,.amb-none:hover{border-color:var(--sage);color:var(--text2)}
+
+/* Focus Mode Toggle */
+.fmtog-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:var(--radius-sm);background:var(--bg2);border:1px solid var(--border);margin-bottom:10px}
+.fmtog-row:last-of-type{margin-bottom:0}
+.fti .ftl{font-size:.9rem;font-weight:600;color:var(--text)}
+.fti .fts{font-size:.74rem;color:var(--text3)}
+.tog{position:relative;width:42px;height:24px}
+.tog input{opacity:0;width:0;height:0}
+.sldr{position:absolute;inset:0;background:var(--border);border-radius:30px;cursor:pointer;transition:background .25s}
+.sldr::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;left:3px;top:3px;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+input:checked+.sldr{background:var(--accent)}
+input:checked+.sldr::before{transform:translateX(18px)}
+
+/* Summary strip */
+.sum-strip{background:linear-gradient(135deg,var(--mint-soft),var(--bg2));border:1.5px solid var(--sage-light);border-radius:var(--radius-sm);padding:14px 18px;display:flex;gap:22px;flex-wrap:wrap;margin-bottom:18px;animation:fadeUp .5s ease .3s both}
+.ss-i .ssl{font-size:.7rem;color:var(--text3)}
+.ss-i .ssv{font-size:.95rem;font-weight:700;color:var(--accent);margin-top:2px}
+
+/* Start button */
+.start-btn{width:100%;padding:17px;border-radius:30px;background:var(--accent);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all var(--transition);box-shadow:0 4px 18px rgba(61,153,112,0.28);display:flex;align-items:center;justify-content:center;gap:9px;animation:fadeUp .5s ease .35s both}
+.start-btn:hover{background:var(--sage-deep);transform:translateY(-2px);box-shadow:0 8px 26px rgba(61,153,112,0.32)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.pomo-grid{grid-template-columns:repeat(2,1fr)}.amb-grid{grid-template-columns:repeat(2,1fr)}.dtabs{flex-direction:column}nav{padding:0 16px}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="dashboard.html"><span class="dot"></span>Focusify</a>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="session-setup.html" class="active">Sesi Fokus</a>
+    <a href="progress.html">Progress</a>
+    <a href="settings.html">Pengaturan</a>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="btn-nav-login">Masuk / Daftar</a>
+    <button class="theme-btn" onclick="toggleTheme()" id="thbtn">🌿</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-hdr">
+    <h1>⚙️ Atur Sesi Belajar</h1>
+    <p>Konfigurasi durasi, ambience, dan focus mode sebelum memulai.</p>
+  </div>
+
+  <!-- Steps indicator -->
+  <div class="steps">
+    <div class="step active">
+      <div class="step-n">1</div>
+      <div class="step-lbl">Durasi</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-lbl">Ambience</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-lbl">Focus Mode</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div class="step-lbl">Mulai</div>
+    </div>
+  </div>
+
+  <!-- 1. SELECT DURATION -->
+  <div class="card" id="card-dur">
+    <div class="sec-lbl">⏱️ 1. Pilih Durasi (Select Duration)</div>
+    <div class="dtabs">
+      <div class="dtab active" onclick="setMode('pomo',this)">
+        <div class="dt">🍅 Pomodoro</div>
+        <div class="dl">Preset terstruktur, terbukti efektif</div>
+      </div>
+      <div class="dtab" onclick="setMode('custom',this)">
+        <div class="dt">✏️ Custom Duration</div>
+        <div class="dl">Atur durasimu sendiri</div>
+      </div>
+    </div>
+
+    <!-- Pomodoro presets -->
+    <div id="pomo-area">
+      <div class="sec-lbl" style="margin-top:0;margin-bottom:10px">Pilih Preset Pomodoro</div>
+      <div class="pomo-grid">
+        <div class="pomo-btn active" onclick="setPomo(25,'Standar',this)"><div class="pm">25'</div><div class="pl">Standar</div></div>
+        <div class="pomo-btn" onclick="setPomo(45,'Panjang',this)"><div class="pm">45'</div><div class="pl">Panjang</div></div>
+        <div class="pomo-btn" onclick="setPomo(15,'Singkat',this)"><div class="pm">15'</div><div class="pl">Singkat</div></div>
+        <div class="pomo-btn" onclick="setPomo(50,'Deep Work',this)"><div class="pm">50'</div><div class="pl">Deep Work</div></div>
+      </div>
+      <div class="pomo-break" id="break-info">☕ Istirahat: <strong>5 menit</strong> setelah sesi selesai</div>
+    </div>
+
+    <!-- Custom duration slider -->
+    <div class="custom-area" id="custom-area">
+      <div class="cdisp">
+        <div class="cdn" id="cval">30</div>
+        <div class="cdl">menit</div>
+      </div>
+      <input type="range" min="5" max="120" value="30" step="5" id="dur-slider" oninput="onSlider(this.value)"/>
+      <div class="rlabels"><span>5 mnt</span><span>60 mnt</span><span>120 mnt</span></div>
+    </div>
+  </div>
+
+  <!-- 2. AMBIENCE SETTINGS -->
+  <div class="card" id="card-amb">
+    <div class="sec-lbl">🎵 2. Ambience Settings</div>
+    <div class="amb-grid">
+      <div class="amb-btn" onclick="setAmb(this,'🌧️ Hujan')"><span class="ai">🌧️</span><span class="al">Hujan</span></div>
+      <div class="amb-btn active" onclick="setAmb(this,'🌿 Hutan')"><span class="ai">🌿</span><span class="al">Hutan</span></div>
+      <div class="amb-btn" onclick="setAmb(this,'☕ Kafe')"><span class="ai">☕</span><span class="al">Kafe</span></div>
+      <div class="amb-btn" onclick="setAmb(this,'🌊 Laut')"><span class="ai">🌊</span><span class="al">Laut</span></div>
+      <div class="amb-btn" onclick="setAmb(this,'🔥 Api')"><span class="ai">🔥</span><span class="al">Api</span></div>
+      <div class="amb-btn" onclick="setAmb(this,'🎵 Lo-fi')"><span class="ai">🎵</span><span class="al">Lo-fi</span></div>
+      <div class="amb-none" onclick="setAmb(this,'🤫 Hening')">🤫 Tanpa suara (Hening)</div>
+    </div>
+  </div>
+
+  <!-- 3. FOCUS MODE TOGGLE -->
+  <div class="card" id="card-fm">
+    <div class="sec-lbl">🛡️ 3. Focus Mode Toggle</div>
+    <div class="fmtog-row">
+      <div class="fti"><div class="ftl">Focus Mode</div><div class="fts">Blokir notifikasi & akses media sosial selama sesi</div></div>
+      <label class="tog"><input type="checkbox" id="fm-toggle" checked onchange="onFMChange()"/><span class="sldr"></span></label>
+    </div>
+    <div class="fmtog-row">
+      <div class="fti"><div class="ftl">Pengingat Istirahat</div><div class="fts">Ingatkan saat waktunya break setelah sesi</div></div>
+      <label class="tog"><input type="checkbox" checked/><span class="sldr"></span></label>
+    </div>
+    <div class="fmtog-row">
+      <div class="fti"><div class="ftl">Peringatan Distraksi</div><div class="fts">Tampilkan alert jika mencoba akses app lain</div></div>
+      <label class="tog"><input type="checkbox" checked/><span class="sldr"></span></label>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="sum-strip">
+    <div class="ss-i"><div class="ssl">Durasi</div><div class="ssv" id="sum-dur">25 menit</div></div>
+    <div class="ss-i"><div class="ssl">Tipe</div><div class="ssv" id="sum-type">🍅 Pomodoro</div></div>
+    <div class="ss-i"><div class="ssl">Ambience</div><div class="ssv" id="sum-amb">🌿 Hutan</div></div>
+    <div class="ss-i"><div class="ssl">Focus Mode</div><div class="ssv" id="sum-fm">✅ Aktif</div></div>
+  </div>
+
+  <button class="start-btn" onclick="startNow()">▶ Mulai Sesi Sekarang</button>
+</main>
+
+<script>
+let dur=25,ambTxt='🌿 Hutan',fmOn=true;
+
+function toggleTheme(){const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';h.setAttribute('data-theme',d?'light':'dark');document.getElementById('thbtn').textContent=d?'🌿':'🌙'}
+
+function setMode(m,el){
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.getElementById('pomo-area').style.display=m==='pomo'?'':'none';
+  document.getElementById('custom-area').classList.toggle('show',m==='custom');
+  document.getElementById('sum-type').textContent=m==='pomo'?'🍅 Pomodoro':'✏️ Custom';
+  updateSteps(1);
+}
+function setPomo(min,lbl,el){
+  document.querySelectorAll('.pomo-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+  dur=min;document.getElementById('sum-dur').textContent=min+' menit';
+  const br=min<=25?5:min<=45?10:15;
+  document.getElementById('break-info').innerHTML=`☕ Istirahat: <strong>${br} menit</strong> setelah sesi selesai`;
+  updateSteps(1);
+}
+function onSlider(v){document.getElementById('cval').textContent=v;dur=+v;document.getElementById('sum-dur').textContent=v+' menit';updateSteps(1)}
+function setAmb(el,txt){
+  document.querySelectorAll('.amb-btn,.amb-none').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+  ambTxt=txt;document.getElementById('sum-amb').textContent=txt;updateSteps(2);
+}
+function onFMChange(){
+  fmOn=document.getElementById('fm-toggle').checked;
+  document.getElementById('sum-fm').textContent=fmOn?'✅ Aktif':'❌ Nonaktif';
+  updateSteps(3);
+}
+function updateSteps(s){
+  const steps=document.querySelectorAll('.step');
+  steps.forEach((st,i)=>{st.classList.remove('active','done');if(i<s)st.classList.add('done');else if(i===s)st.classList.add('active')});
+}
+function startNow(){window.location.href='active-session.html'}
+</script>
+</body>
+</html>

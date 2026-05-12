@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Focusify – Ringkasan Sesi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f5f9f7;--bg2:#eaf3ef;--card:#ffffff;--border:#d4e8df;--mint-soft:#e4f5ec;--sage-light:#a8d5be;--text:#1e3028;--text2:#4d7060;--text3:#8aab96;--accent:#3d9970;--sage:#6ba68a;--sage-deep:#4a876c;--shadow:0 2px 16px rgba(74,135,108,0.10);--shadow-lg:0 8px 40px rgba(74,135,108,0.13);--radius:18px;--radius-sm:10px;--nav-h:68px;--transition:0.22s cubic-bezier(.4,0,.2,1)}
+[data-theme="dark"]{--bg:#111a15;--bg2:#182219;--card:#1d2e22;--border:#2b4035;--mint-soft:#243d2e;--sage-light:#4a7a62;--text:#e2f0e8;--text2:#8fcfad;--text3:#527a63;--accent:#5dbd8f;--sage-deep:#8fcfad;--shadow:0 2px 16px rgba(0,0,0,0.25);--shadow-lg:0 8px 40px rgba(0,0,0,0.35)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;box-shadow:var(--shadow);transition:background var(--transition)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:1.45rem;color:var(--accent);text-decoration:none}
+.nav-logo .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.theme-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all var(--transition)}
+main{padding-top:calc(var(--nav-h)+36px);padding-bottom:64px;max-width:680px;margin:0 auto;padding-left:28px;padding-right:28px}
+
+/* Celebration */
+.celeb{text-align:center;padding:36px 0 26px;animation:fadeUp .6s ease}
+.celeb-icon{font-size:3.8rem;display:block;margin-bottom:12px;animation:bounceIn .8s ease}
+.celeb h1{font-family:'DM Serif Display',serif;font-size:2.1rem;margin-bottom:7px;color:var(--text)}
+.celeb p{font-size:.9rem;color:var(--text2)}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:14px;transition:background var(--transition),border-color var(--transition);animation:fadeUp .5s ease both}
+.card:nth-child(2){animation-delay:.05s}.card:nth-child(3){animation-delay:.1s}.card:nth-child(4){animation-delay:.15s}.card:nth-child(5){animation-delay:.2s}
+.ctitle{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* Study Duration card */
+.dur-center{display:flex;align-items:center;gap:24px}
+.dur-ring{flex-shrink:0}
+.dur-info h2{font-family:'DM Serif Display',serif;font-size:2.4rem;color:var(--accent);line-height:1}
+.dur-info p{font-size:.84rem;color:var(--text2);margin-top:5px}
+.dur-info small{font-size:.72rem;color:var(--text3)}
+.tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tag{padding:5px 13px;border-radius:20px;font-size:.76rem;font-weight:600}
+.tag.green{background:var(--mint-soft);color:var(--accent);border:1px solid var(--sage-light)}
+.tag.orange{background:#fff3e0;color:#e67e22;border:1px solid #ffd5a0}
+.tag.blue{background:#e8f4ff;color:#2980b9;border:1px solid #bde0ff}
+
+/* Session Result */
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.rg-item{text-align:center;padding:16px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.rg-n{font-size:1.7rem;font-weight:700;color:var(--accent);line-height:1}
+.rg-l{font-size:.7rem;color:var(--text3);margin-top:4px}
+.result-detail{display:flex;flex-direction:column;gap:8px}
+.rd-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.rd-lbl{font-size:.83rem;color:var(--text2)}
+.rd-val{font-size:.83rem;font-weight:700;color:var(--text)}
+
+/* Progress Update */
+.pu-item{margin-bottom:12px}
+.pu-labels{display:flex;justify-content:space-between;font-size:.76rem;color:var(--text2);margin-bottom:5px}
+.pu-bar{height:11px;background:var(--bg2);border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.pu-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--sage-light));animation:growBar .9s ease .3s both}
+.pu-milestone{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+.milestone{padding:7px 14px;border-radius:20px;font-size:.76rem;font-weight:600;background:var(--mint-soft);color:var(--accent);border:1px solid var(--sage-light)}
+
+/* Insight */
+.ins-list{display:flex;flex-direction:column;gap:9px}
+.ins{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.ins-ic{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.ins-t{font-size:.82rem;color:var(--text2);line-height:1.55}
+
+/* Save prompt (login optional - per flow) */
+.save-prompt{background:linear-gradient(135deg,var(--mint-soft),var(--bg2));border:1.5px dashed var(--sage-light);border-radius:var(--radius);padding:22px;text-align:center;margin-bottom:14px;animation:fadeUp .5s ease .25s both}
+.save-prompt h3{font-family:'DM Serif Display',serif;font-size:1.15rem;margin-bottom:7px;color:var(--text)}
+.save-prompt p{font-size:.82rem;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.btn-save{width:100%;padding:13px;border-radius:30px;background:var(--accent);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all var(--transition)}
+.btn-save:hover{background:var(--sage-deep)}
+.skip-link{display:block;margin-top:9px;font-size:.78rem;color:var(--text3);cursor:pointer;text-decoration:none}
+.skip-link:hover{color:var(--accent)}
+
+/* CTA */
+.cta-row{display:flex;gap:11px;animation:fadeUp .5s ease .3s both}
+.btn-next{flex:1;padding:15px;border-radius:30px;background:var(--accent);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all var(--transition);box-shadow:0 4px 16px rgba(61,153,112,0.25);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-next:hover{background:var(--sage-deep);transform:translateY(-2px)}
+.btn-dash{flex:1;padding:15px;border-radius:30px;background:var(--bg2);color:var(--text2);border:1.5px solid var(--border);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all var(--transition);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-dash:hover{background:var(--mint-soft);color:var(--accent);border-color:var(--sage-light)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounceIn{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes growBar{from{width:0}}
+@media(max-width:600px){.result-grid{grid-template-columns:repeat(2,1fr)}.cta-row{flex-direction:column}.dur-center{flex-direction:column;text-align:center}nav{padding:0 16px}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="dashboard.html"><span class="dot"></span>Focusify</a>
+  <button class="theme-btn" onclick="toggleTheme()" id="thbtn">🌿</button>
+</nav>
+
+<main>
+  <!-- Celebration -->
+  <div class="celeb">
+    <span class="celeb-icon">🎉</span>
+    <h1>Sesi Berhasil!</h1>
+    <p>Kerja bagus! Kamu telah menyelesaikan sesi belajar dengan fokus yang baik.</p>
+  </div>
+
+  <!-- STUDY DURATION -->
+  <div class="card">
+    <div class="ctitle">⏱️ Study Duration</div>
+    <div class="dur-center">
+      <div class="dur-ring">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle cx="45" cy="45" r="36" fill="none" stroke="var(--border)" stroke-width="9"/>
+          <circle cx="45" cy="45" r="36" fill="none" stroke="var(--accent)" stroke-width="9"
+            stroke-dasharray="226" stroke-dashoffset="0" stroke-linecap="round"
+            transform="rotate(-90 45 45)" style="animation:growDash .9s ease .4s both"/>
+          <text x="45" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent)" font-family="DM Sans">100%</text>
+        </svg>
+      </div>
+      <div class="dur-info">
+        <h2>25:00</h2>
+        <p>Durasi belajar efektif</p>
+        <small>Sesi penuh berhasil diselesaikan</small>
+      </div>
+    </div>
+    <div class="tag-row">
+      <span class="tag green">✅ Sesi Selesai Penuh</span>
+      <span class="tag blue">🍅 Pomodoro</span>
+      <span class="tag blue">🌿 Hutan</span>
+      <span class="tag green">🛡️ Focus Mode Aktif</span>
+    </div>
+  </div>
+
+  <!-- SESSION RESULT -->
+  <div class="card">
+    <div class="ctitle">📋 Session Result</div>
+    <div class="result-grid">
+      <div class="rg-item"><div class="rg-n">98%</div><div class="rg-l">Fokus Score</div></div>
+      <div class="rg-item"><div class="rg-n">1x</div><div class="rg-l">Distraksi Dicegah</div></div>
+      <div class="rg-item"><div class="rg-n">0x</div><div class="rg-l">Sesi Dijeda</div></div>
+    </div>
+    <div class="result-detail">
+      <div class="rd-row"><span class="rd-lbl">Waktu Mulai</span><span class="rd-val">20:15 WIB</span></div>
+      <div class="rd-row"><span class="rd-lbl">Waktu Selesai</span><span class="rd-val">20:40 WIB</span></div>
+      <div class="rd-row"><span class="rd-lbl">Total Durasi Efektif</span><span class="rd-val">25 menit</span></div>
+      <div class="rd-row"><span class="rd-lbl">Metode</span><span class="rd-val">🍅 Pomodoro (25')</span></div>
+      <div class="rd-row"><span class="rd-lbl">Ambience</span><span class="rd-val">🌿 Hutan</span></div>
+      <div class="rd-row"><span class="rd-lbl">Status</span><span class="rd-val" style="color:var(--accent)">✅ Selesai Penuh</span></div>
+    </div>
+  </div>
+
+  <!-- PROGRESS UPDATE -->
+  <div class="card">
+    <div class="ctitle">📈 Progress Update</div>
+    <div class="pu-item">
+      <div class="pu-labels"><span>Target Harian (4 sesi)</span><span>4 / 4 ✅</span></div>
+      <div class="pu-bar"><div class="pu-fill" style="width:100%"></div></div>
+    </div>
+    <div class="pu-item">
+      <div class="pu-labels"><span>Total Fokus Minggu Ini</span><span>18.4 / 25 jam</span></div>
+      <div class="pu-bar"><div class="pu-fill" style="width:73%"></div></div>
+    </div>
+    <div class="pu-item">
+      <div class="pu-labels"><span>Monthly Goal</span><span>47 / 60 sesi</span></div>
+      <div class="pu-bar"><div class="pu-fill" style="width:78%"></div></div>
+    </div>
+    <div class="pu-milestone">
+      <span class="milestone">🔥 Streak 6 Hari!</span>
+      <span class="milestone">🎯 Target Harian Tercapai</span>
+      <span class="milestone">⭐ 98% Fokus Score</span>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="card">
+    <div class="ctitle">💡 Insight Sesi</div>
+    <div class="ins-list">
+      <div class="ins"><div class="ins-ic">🎯</div><div class="ins-t">Fokus scoremu <strong>98%</strong> — sangat baik! Hanya 1 distraksi terdeteksi dan langsung dicegah oleh Focus Mode.</div></div>
+      <div class="ins"><div class="ins-ic">📈</div><div class="ins-t">Target harian <strong>4 sesi</strong> tercapai. Konsistensimu minggu ini meningkat 15% dibanding minggu lalu.</div></div>
+      <div class="ins"><div class="ins-ic">🌱</div><div class="ins-t">Streak <strong>6 hari berturut-turut</strong>. Pertahankan momentum ini! Besok targetkan sesi di jam yang sama.</div></div>
+    </div>
+  </div>
+
+  <!-- SAVE PROMPT (optional login - per user flow) -->
+  <div class="save-prompt" id="save-section">
+    <h3>💾 Simpan Riwayat Sesi?</h3>
+    <p>Masuk atau daftar gratis untuk menyimpan riwayat sesi, memantau statistik belajar jangka panjang, dan mendapatkan insight personal yang lebih mendalam.</p>
+    <button class="btn-save" onclick="window.location.href='auth.html'">🔐 Masuk / Daftar untuk Menyimpan</button>
+    <a class="skip-link" onclick="document.getElementById('save-section').style.display='none'">Lewati, lanjut tanpa menyimpan</a>
+  </div>
+
+  <!-- CTA: New session or back to Dashboard -->
+  <div class="cta-row">
+    <a href="session-setup.html" class="btn-next">▶ Mulai Sesi Baru</a>
+    <a href="dashboard.html" class="btn-dash">🏠 Ke Dashboard</a>
+  </div>
+</main>
+
+<style>
+@keyframes growDash{from{stroke-dashoffset:226}to{stroke-dashoffset:0}}
+</style>
+<script>
+function toggleTheme(){const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';h.setAttribute('data-theme',d?'light':'dark');document.getElementById('thbtn').textContent=d?'🌿':'🌙'}
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Focusify – Masuk / Daftar</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f5f9f7;--bg2:#eaf3ef;--card:#ffffff;--border:#d4e8df;--mint-soft:#e4f5ec;--sage-light:#a8d5be;--text:#1e3028;--text2:#4d7060;--text3:#8aab96;--accent:#3d9970;--sage:#6ba68a;--sage-deep:#4a876c;--shadow:0 2px 16px rgba(74,135,108,0.10);--shadow-lg:0 8px 40px rgba(74,135,108,0.16);--radius:18px;--radius-sm:10px;--nav-h:68px;--transition:0.22s cubic-bezier(.4,0,.2,1)}
+[data-theme="dark"]{--bg:#111a15;--bg2:#182219;--card:#1d2e22;--border:#2b4035;--mint-soft:#243d2e;--sage-light:#4a7a62;--text:#e2f0e8;--text2:#8fcfad;--text3:#527a63;--accent:#5dbd8f;--sage-deep:#8fcfad;--shadow:0 2px 16px rgba(0,0,0,0.25);--shadow-lg:0 8px 40px rgba(0,0,0,0.35)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;transition:background var(--transition),color var(--transition)}
+nav{height:var(--nav-h);background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;box-shadow:var(--shadow);flex-shrink:0}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:1.45rem;color:var(--accent);text-decoration:none}
+.nav-logo .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.theme-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all var(--transition)}
+.back-link{font-size:.85rem;color:var(--text2);text-decoration:none;font-weight:500;display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;transition:all var(--transition)}
+.back-link:hover{background:var(--mint-soft);color:var(--accent)}
+
+/* layout */
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:36px 20px}
+.auth-wrap{width:100%;max-width:440px}
+
+/* Branding */
+.brand{text-align:center;margin-bottom:28px;animation:fadeUp .5s ease}
+.brand-icon{font-size:2.4rem;margin-bottom:8px;display:block}
+.brand h1{font-family:'DM Serif Display',serif;font-size:1.9rem;color:var(--text);margin-bottom:5px}
+.brand p{font-size:.87rem;color:var(--text2)}
+
+/* Card */
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);overflow:hidden;animation:fadeUp .5s ease .08s both}
+
+/* Tab switcher: Login | Register */
+.auth-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border)}
+.atab{flex:1;padding:14px;text-align:center;font-size:.9rem;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;transition:all var(--transition)}
+.atab.active{color:var(--accent);background:var(--card);border-bottom:2px solid var(--accent)}
+
+/* Form */
+.auth-body{padding:28px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.form-group input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:all var(--transition);outline:none}
+.form-group input:focus{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 3px rgba(61,153,112,0.12)}
+.form-group input::placeholder{color:var(--text3)}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* optional info */
+.opt-note{font-size:.76rem;color:var(--text3);margin-bottom:18px;padding:10px 12px;background:var(--mint-soft);border-radius:var(--radius-sm);border:1px solid var(--sage-light);line-height:1.55}
+
+/* submit */
+.btn-submit{width:100%;padding:14px;border-radius:30px;background:var(--accent);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all var(--transition);box-shadow:0 4px 18px rgba(61,153,112,0.26);margin-top:4px}
+.btn-submit:hover{background:var(--sage-deep);transform:translateY(-1px)}
+.btn-submit:active{transform:translateY(0)}
+
+/* divider */
+.divider{text-align:center;margin:16px 0;position:relative;font-size:.76rem;color:var(--text3)}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 30px);height:1px;background:var(--border)}
+.divider::before{left:0}.divider::after{right:0}
+
+/* google-like social */
+.btn-social{width:100%;padding:11px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:9px}
+.btn-social:hover{border-color:var(--sage);background:var(--mint-soft);color:var(--text)}
+
+/* forgot */
+.forgot{text-align:right;margin-bottom:16px}
+.forgot a{font-size:.78rem;color:var(--accent);text-decoration:none;font-weight:500}
+.forgot a:hover{text-decoration:underline}
+
+/* skip */
+.skip-row{text-align:center;margin-top:16px;font-size:.8rem;color:var(--text3)}
+.skip-row a{color:var(--accent);font-weight:600;text-decoration:none}
+.skip-row a:hover{text-decoration:underline}
+
+/* benefits */
+.benefits{margin-top:22px;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);animation:fadeUp .5s ease .16s both}
+.ben-title{font-size:.76rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.ben-list{display:flex;flex-direction:column;gap:7px}
+.ben-i{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--text2)}
+.ben-i .bi{font-size:1rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:480px){.form-row{grid-template-columns:1fr}nav{padding:0 16px}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="dashboard.html"><span class="dot"></span>Focusify</a>
+  <div class="nav-right">
+    <a href="dashboard.html" class="back-link">← Kembali ke Dashboard</a>
+    <button class="theme-btn" onclick="toggleTheme()" id="thbtn">🌿</button>
+  </div>
+</nav>
+
+<main>
+  <div class="auth-wrap">
+    <div class="brand">
+      <span class="brand-icon">🌿</span>
+      <h1>Focusify</h1>
+      <p>Masuk untuk menyimpan progress & riwayat belajarmu</p>
+    </div>
+
+    <div class="auth-card">
+      <!-- Login | Register tabs per IA: Authentication → Login, Register -->
+      <div class="auth-tabs">
+        <button class="atab active" id="tab-login" onclick="switchTab('login')">🔐 Masuk (Login)</button>
+        <button class="atab" id="tab-reg" onclick="switchTab('reg')">✨ Daftar (Register)</button>
+      </div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div class="auth-body" id="form-login">
+        <div class="opt-note">
+          💡 <strong>Login bersifat opsional.</strong> Kamu bisa langsung pakai Focusify tanpa akun. Login hanya diperlukan untuk menyimpan progress secara persisten.
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="nama@email.com" autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <div class="forgot"><a href="#">Lupa password?</a></div>
+        <button class="btn-submit" onclick="doLogin()">Masuk ke Focusify</button>
+        <div class="divider">atau lanjut dengan</div>
+        <button class="btn-social">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.6 2.3 30.1 0 24 0 14.7 0 6.7 5.5 2.6 13.4l7.9 6.1C12.5 13.1 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.9-2.2 5.3-4.7 6.9l7.3 5.7c4.3-3.9 6.8-9.7 6.8-16.6z"/><path fill="#FBBC05" d="M10.5 28.5A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.5l-7.9-6.1A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.1 0 11.3-2 15-5.4l-7.3-5.7c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.9 6.2C6.7 42.5 14.7 48 24 48z"/></svg>
+          Lanjut dengan Google
+        </button>
+        <div class="skip-row">Belum mau login? <a href="dashboard.html">Kembali ke dashboard →</a></div>
+      </div>
+
+      <!-- ── REGISTER FORM ── -->
+      <div class="auth-body" id="form-reg" style="display:none">
+        <div class="opt-note">
+          💡 Daftar <strong>gratis</strong> untuk menyimpan progress, streak, dan statistik belajarmu di semua perangkat.
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nama Depan</label>
+            <input type="text" placeholder="Rina"/>
+          </div>
+          <div class="form-group">
+            <label>Nama Belakang</label>
+            <input type="text" placeholder="Aulia"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="nama@email.com" autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="Min. 8 karakter" autocomplete="new-password"/>
+        </div>
+        <div class="form-group">
+          <label>Konfirmasi Password</label>
+          <input type="password" placeholder="Ulangi password" autocomplete="new-password"/>
+        </div>
+        <button class="btn-submit" onclick="doRegister()">Buat Akun Gratis</button>
+        <div class="divider">atau daftar dengan</div>
+        <button class="btn-social">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.6 2.3 30.1 0 24 0 14.7 0 6.7 5.5 2.6 13.4l7.9 6.1C12.5 13.1 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.9-2.2 5.3-4.7 6.9l7.3 5.7c4.3-3.9 6.8-9.7 6.8-16.6z"/><path fill="#FBBC05" d="M10.5 28.5A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.5l-7.9-6.1A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.1 0 11.3-2 15-5.4l-7.3-5.7c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.9 6.2C6.7 42.5 14.7 48 24 48z"/></svg>
+          Daftar dengan Google
+        </button>
+        <div class="skip-row">Sudah punya akun? <a href="#" onclick="switchTab('login');return false">Masuk di sini</a></div>
+      </div>
+    </div>
+
+    <!-- Benefits reminder -->
+    <div class="benefits">
+      <div class="ben-title">Kenapa daftar?</div>
+      <div class="ben-list">
+        <div class="ben-i"><span class="bi">💾</span> Simpan riwayat & statistik belajar permanen</div>
+        <div class="ben-i"><span class="bi">🔥</span> Pantau streak dan konsistensimu</div>
+        <div class="ben-i"><span class="bi">📊</span> Insight belajar jangka panjang yang personal</div>
+        <div class="ben-i"><span class="bi">📱</span> Sinkronisasi antar perangkat</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function toggleTheme(){const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';h.setAttribute('data-theme',d?'light':'dark');document.getElementById('thbtn').textContent=d?'🌿':'🌙'}
+
+function switchTab(t){
+  document.getElementById('tab-login').classList.toggle('active',t==='login');
+  document.getElementById('tab-reg').classList.toggle('active',t==='reg');
+  document.getElementById('form-login').style.display=t==='login'?'':'none';
+  document.getElementById('form-reg').style.display=t==='reg'?'':'none';
+}
+
+function doLogin(){
+  // Simulate login → redirect to dashboard
+  window.location.href='dashboard.html';
+}
+function doRegister(){
+  window.location.href='dashboard.html';
+}
+</script>
+</body>
+</html>
