@@ -131,7 +131,7 @@ const AuthPage = () => {
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder="john_doe"
+                placeholder="Your Name"
                 disabled={loading}
                 required
               />
