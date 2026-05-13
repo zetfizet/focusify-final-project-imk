@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
-import { audioEngine } from '../utils/audioEngine'
 
 const CIRC = 2 * Math.PI * 100
 
@@ -45,17 +44,17 @@ export default function ActiveSession() {
   const config = useRef(getSessionConfig()).current
   const TOTAL = config.duration * 60
 
-  const getAmbienceType = (amb) => {
+  const getAmbienceVideoId = (amb) => {
     if (!amb) return null
-    if (amb.includes('🌧️')) return 'rain'
-    if (amb.includes('🌿')) return 'forest'
-    if (amb.includes('☕')) return 'cafe'
-    if (amb.includes('🌊')) return 'beach'
-    if (amb.includes('🔥')) return 'fire'
-    if (amb.includes('🎵')) return 'lofi'
+    if (amb.includes('🌧️')) return 'mPZkdNFkNps'
+    if (amb.includes('🌿')) return 'xNN7iTA57jM'
+    if (amb.includes('☕')) return 'BO_XwM5D-XU'
+    if (amb.includes('🌊')) return 'Nep1qytq9JM'
+    if (amb.includes('🔥')) return 'L_LUpnjgPso'
+    if (amb.includes('🎵')) return 'jfKfPfyJRdk' // Lofi Girl
     return null
   }
-  const ambType = getAmbienceType(config.ambience)
+  const videoId = getAmbienceVideoId(config.ambience)
 
   const [remaining, setRemaining] = useState(TOTAL)
   const [paused, setPaused] = useState(false)
@@ -100,21 +99,14 @@ export default function ActiveSession() {
       setShowDistract(true)
     }, 7000)
 
-    // Play Ambience Sound
-    if (ambType && !pausedRef.current) {
-      audioEngine.play(ambType)
-    }
-
     return () => { 
       clearInterval(intervalRef.current)
       clearTimeout(demoTimeout)
-      audioEngine.stop()
     }
-  }, [navigate, config, TOTAL, ambType])
+  }, [navigate, config, TOTAL])
 
   function handleStop() {
     clearInterval(intervalRef.current)
-    audioEngine.stop()
     const elapsed = TOTAL - remaining
     saveCompletedSession(config, elapsed, TOTAL, distCntRef.current, elapsed >= TOTAL * 0.5 ? 'partial' : 'partial')
     navigate('/session-summary')
@@ -124,12 +116,7 @@ export default function ActiveSession() {
     const next = !paused
     setPaused(next)
     pausedRef.current = next
-    if (next) {
-      setShowFCP(true)
-      audioEngine.stop()
-    } else {
-      if (ambType) audioEngine.play(ambType)
-    }
+    if (next) setShowFCP(true)
   }
 
   function toggleFCPPanel() {
@@ -137,7 +124,6 @@ export default function ActiveSession() {
       setPaused(true)
       pausedRef.current = true
       setShowFCP(true)
-      audioEngine.stop()
     } else {
       setShowFCP(f => !f)
     }
@@ -313,6 +299,19 @@ export default function ActiveSession() {
           </div>
         </div>
       </div>
+
+      {/* HIDDEN AMBIENCE AUDIO PLAYER (YOUTUBE IFRAME) */}
+      {videoId && !paused && !finished && (
+        <iframe 
+          width="10" 
+          height="10" 
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0`} 
+          title="Ambience Audio"
+          frameBorder="0" 
+          allow="autoplay" 
+          style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}
+        ></iframe>
+      )}
     </>
   )
 }
