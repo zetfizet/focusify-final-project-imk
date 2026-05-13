@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
 
@@ -89,6 +90,7 @@ export default function Progress() {
   const [tab, setTab] = useState(['daily','weekly','stats','history'].includes(hash) ? hash : 'daily')
   const [histFilter, setHistFilter] = useState('all')
   const [sessions, setSessions] = useState(getStoredSessions)
+  const { t } = useLanguage()
 
   useEffect(() => {
     if (['daily','weekly','stats','history'].includes(hash)) setTab(hash)
@@ -150,47 +152,47 @@ export default function Progress() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 'calc(var(--nav-h) + 32px)', paddingBottom: 64, maxWidth: 1100, margin: '0 auto', paddingLeft: 28, paddingRight: 28 }}>
-        <div className="page-hdr"><h1>📊 Learning Progress</h1><p>Monitor your progress — daily, weekly, statistics, and session history.</p></div>
+      <main className="container wide">
+        <div className="page-hdr"><h1>📊 {t('progress.title')}</h1><p>{t('progress.subtitle')}</p></div>
 
         <div className="subtabs">
-          {['daily','weekly','stats','history'].map(t => (
-            <button key={t} className={`stab ${tab===t?'active':''}`} onClick={() => setTab(t)}>
-              {t==='daily'?'📅 Daily Progress':t==='weekly'?'📆 Weekly Summary':t==='stats'?'📊 Study Statistics':'🕐 Session History'}
+          {['daily','weekly','stats','history'].map(tb => (
+            <button key={tb} className={`stab ${tab===tb?'active':''}`} onClick={() => setTab(tb)}>
+              {tb==='daily'?`📅 ${t('progress.dailyProgress')}`:tb==='weekly'?`📆 ${t('progress.weeklySummary')}`:tb==='stats'?`📊 ${t('progress.studyStats')}`:`🕐 ${t('progress.sessionHistory')}`}
             </button>
           ))}
         </div>
 
         {/* KPI */}
         <div className="g4" style={{ marginBottom: 20 }}>
-          <div className="card kpi"><div className="kpi-n">{sessions.length || 0}</div><div className="kpi-l">Total Sessions</div><div className="kpi-d">↑ stored locally</div></div>
-          <div className="card kpi"><div className="kpi-n">{todayTotal ? (todayTotal / 60).toFixed(1) + 'h' : '0h'}</div><div className="kpi-l">Total Focus Today</div><div className="kpi-d">↑ +{todaySessions.length} sessions</div></div>
-          <div className="card kpi"><div className="kpi-n">{todayAvgScore || 0}%</div><div className="kpi-l">Avg Focus Score</div><div className="kpi-d">↑ today</div></div>
-          <div className="card kpi"><div className="kpi-n">🔥{todaySessions.length || 0}</div><div className="kpi-l">Today's Sessions</div><div className="kpi-d" style={{ color:'var(--accent)' }}>Target: {TARGET}</div></div>
+          <div className="card kpi"><div className="kpi-n">{sessions.length || 0}</div><div className="kpi-l">{t('progress.totalSessions')}</div><div className="kpi-d">{t('progress.storedLocally')}</div></div>
+          <div className="card kpi"><div className="kpi-n">{todayTotal ? (todayTotal / 60).toFixed(1) + 'h' : '0h'}</div><div className="kpi-l">{t('progress.totalFocusToday')}</div><div className="kpi-d">{t('progress.addedSessions').replace('{count}', todaySessions.length)}</div></div>
+          <div className="card kpi"><div className="kpi-n">{todayAvgScore || 0}%</div><div className="kpi-l">{t('progress.avgFocusScore')}</div><div className="kpi-d">{t('progress.todayAvg')}</div></div>
+          <div className="card kpi"><div className="kpi-n">🔥{todaySessions.length || 0}</div><div className="kpi-l">{t('progress.todaysSessions')}</div><div className="kpi-d" style={{ color:'var(--accent)' }}>{t('progress.target').replace('{count}', TARGET)}</div></div>
         </div>
 
         {/* DAILY */}
         {tab === 'daily' && (
           <div className="g2">
             <div className="card">
-              <div className="ctitle">🎯 Daily Target</div>
+              <div className="ctitle">🎯 {t('progress.dailyTarget')}</div>
               <div className="ring-row">
                 <svg width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" strokeWidth="8" /><circle cx="40" cy="40" r="32" fill="none" stroke="var(--accent)" strokeWidth="8" strokeDasharray="201" strokeDashoffset={dashOffset} strokeLinecap="round" transform="rotate(-90 40 40)" /><text x="40" y="45" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--accent)" fontFamily="DM Sans">{pct}%</text></svg>
-                <div className="ring-info"><h3>{todaySessions.length} / {TARGET}</h3><p>Sessions completed today</p><small>Target: {TARGET} sessions per day</small></div>
+                <div className="ring-info"><h3>{todaySessions.length} / {TARGET}</h3><p>{t('progress.sessionsCompleted')}</p><small>{t('progress.targetPerDay').replace('{count}', TARGET)}</small></div>
               </div>
               <div style={{ marginTop:14, display:'flex', gap:10, flexWrap:'wrap' }}>
-                <div style={{ fontSize:'.8rem', color:'var(--text2)' }}>⏱️ Total: <strong style={{ color:'var(--accent)' }}>{todayTotal} min</strong></div>
-                <div style={{ fontSize:'.8rem', color:'var(--text2)' }}>⚡ Focus avg: <strong style={{ color:'var(--accent)' }}>{todayAvgScore || '-'}%</strong></div>
+                <div style={{ fontSize:'.8rem', color:'var(--text2)' }}>⏱️ {t('progress.total')}<strong style={{ color:'var(--accent)' }}>{todayTotal}{t('progress.min')}</strong></div>
+                <div style={{ fontSize:'.8rem', color:'var(--text2)' }}>⚡ {t('progress.focusAvg')}<strong style={{ color:'var(--accent)' }}>{todayAvgScore || '-'}%</strong></div>
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🕐 Today's Sessions</div>
+              <div className="ctitle">🕐 {t('progress.todaysSessions')}</div>
               <div className="today-sess">
                 {todaySessions.length === 0 && (
                   <div className="ts-item" style={{ border:'1.5px dashed var(--border)', background:'transparent', opacity:.6 }}>
                     <div className="ts-ic">⬜</div>
-                    <div className="ts-info"><div className="ts-name" style={{ color:'var(--text3)' }}>No sessions today yet</div><div className="ts-meta">Start your first focus session!</div></div>
-                    <Link to="/session-setup" style={{ fontSize:'.76rem', color:'var(--accent)', fontWeight:600, whiteSpace:'nowrap', textDecoration:'none' }}>Start →</Link>
+                    <div className="ts-info"><div className="ts-name" style={{ color:'var(--text3)' }}>{t('progress.noSessionsToday')}</div><div className="ts-meta">{t('progress.startFirst')}</div></div>
+                    <Link to="/session-setup" style={{ fontSize:'.76rem', color:'var(--accent)', fontWeight:600, whiteSpace:'nowrap', textDecoration:'none' }}>{t('progress.start')}</Link>
                   </div>
                 )}
                 {todaySessions.map((s, i) => (
@@ -206,8 +208,8 @@ export default function Progress() {
                 {todaySessions.length > 0 && todaySessions.length < TARGET && (
                   <div className="ts-item" style={{ border:'1.5px dashed var(--border)', background:'transparent', opacity:.6 }}>
                     <div className="ts-ic">⬜</div>
-                    <div className="ts-info"><div className="ts-name" style={{ color:'var(--text3)' }}>Session {todaySessions.length + 1} not started yet</div><div className="ts-meta">Remaining targets</div></div>
-                    <Link to="/session-setup" style={{ fontSize:'.76rem', color:'var(--accent)', fontWeight:600, whiteSpace:'nowrap', textDecoration:'none' }}>Start →</Link>
+                    <div className="ts-info"><div className="ts-name" style={{ color:'var(--text3)' }}>{t('progress.notStartedYet').replace('{count}', todaySessions.length + 1)}</div><div className="ts-meta">{t('progress.remainingTargets')}</div></div>
+                    <Link to="/session-setup" style={{ fontSize:'.76rem', color:'var(--accent)', fontWeight:600, whiteSpace:'nowrap', textDecoration:'none' }}>{t('progress.start')}</Link>
                   </div>
                 )}
               </div>
@@ -219,23 +221,23 @@ export default function Progress() {
         {tab === 'weekly' && (
           <div className="g2">
             <div className="card">
-              <div className="ctitle">📅 Sessions Per Day (This Week)</div>
+              <div className="ctitle">📅 {t('progress.sessionsPerDay')}</div>
               <div className="bar-chart">
                 {weeklyBars.map((b,i) => (
                   <div key={i} className="bar-wrap"><div className={`bar ${b.cls}`} style={{ height:b.h }} data-tip={b.tip}></div><div className="bl">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}</div></div>
                 ))}
               </div>
               <div className="week-kpis">
-                <div className="wk-i"><div className="wk-n">{weekSessions.length}</div><div className="wk-l">Sessions This Week</div></div>
-                <div className="wk-i"><div className="wk-n">{weekTotal}h</div><div className="wk-l">Total Focus</div></div>
-                <div className="wk-i"><div className="wk-n">{weekAvgScore || 0}%</div><div className="wk-l">Avg Score</div></div>
+                <div className="wk-i"><div className="wk-n">{weekSessions.length}</div><div className="wk-l">{t('progress.sessionsThisWeek')}</div></div>
+                <div className="wk-i"><div className="wk-n">{weekTotal}h</div><div className="wk-l">{t('progress.totalFocus')}</div></div>
+                <div className="wk-i"><div className="wk-n">{weekAvgScore || 0}%</div><div className="wk-l">{t('progress.avgScore')}</div></div>
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🗓️ Learning Calendar (4 Weeks)</div>
+              <div className="ctitle">🗓️ {t('progress.learningCalendar')}</div>
               <div className="hm-head"><div className="hm-dl">M</div><div className="hm-dl">T</div><div className="hm-dl">W</div><div className="hm-dl">T</div><div className="hm-dl">F</div><div className="hm-dl">S</div><div className="hm-dl">S</div></div>
               <div className="heatmap">{hmData.map((l,i) => <div key={i} className={`hm-cell hm-${l}`}></div>)}</div>
-              <div className="hm-legend"><span>Low</span><div className="hml" style={{ background:'var(--bg2)', border:'1px solid var(--border)' }}></div><div className="hml" style={{ background:'var(--b4)' }}></div><div className="hml" style={{ background:'var(--b3)' }}></div><div className="hml" style={{ background:'var(--b2)' }}></div><div className="hml" style={{ background:'var(--b1)' }}></div><span>High</span></div>
+              <div className="hm-legend"><span>{t('progress.low')}</span><div className="hml" style={{ background:'var(--bg2)', border:'1px solid var(--border)' }}></div><div className="hml" style={{ background:'var(--b4)' }}></div><div className="hml" style={{ background:'var(--b3)' }}></div><div className="hml" style={{ background:'var(--b2)' }}></div><div className="hml" style={{ background:'var(--b1)' }}></div><span>{t('progress.high')}</span></div>
             </div>
           </div>
         )}
@@ -244,17 +246,17 @@ export default function Progress() {
         {tab === 'stats' && (
           <div className="g2">
             <div className="card">
-              <div className="ctitle">📚 Main Statistics</div>
+              <div className="ctitle">📚 {t('progress.mainStatistics')}</div>
               <div className="stat-list">
-                {[{ic:'⏱️',n:'Average session duration',w:'78%',v:`${avgSessionDuration}'`},{ic:'🎯',n:'Session completion rate',w: completionRate + '%', v: completionRate + '%'},{ic:'🛡️',n:'Distractions prevented (all)',w:'60%',v:totalDistractions + 'x'},{ic:'🌿',n:'Average focus score',w: overallAvgScore + '%', v: overallAvgScore + '%'},{ic:'⏳',n:'Total learning time',w:'100%',v: totalHours + 'h'},{ic:'📊',n:'Total sessions completed',w:'72%',v: sessions.length}].map((s,i) => (
+                {[{ic:'⏱️',n:t('progress.avgSessionDuration'),w:'78%',v:`${avgSessionDuration}'`},{ic:'🎯',n:t('progress.sessionCompletionRate'),w: completionRate + '%', v: completionRate + '%'},{ic:'🛡️',n:t('progress.distractionsPrevented'),w:'60%',v:totalDistractions + 'x'},{ic:'🌿',n:t('progress.avgFocusScore'),w: overallAvgScore + '%', v: overallAvgScore + '%'},{ic:'⏳',n:t('progress.totalLearningTime'),w:'100%',v: totalHours + 'h'},{ic:'📊',n:t('progress.totalSessions'),w:'72%',v: sessions.length}].map((s,i) => (
                   <div key={i} className="sl-item"><div className="sl-ic">{s.ic}</div><div className="sl-info"><div className="sl-name">{s.n}</div><div className="sl-bar"><div className="sl-fill" style={{ width: typeof s.w === 'number' ? s.w + '%' : s.w }}></div></div></div><div className="sl-val">{s.v}</div></div>
                 ))}
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🏆 Achievements</div>
+              <div className="ctitle">🏆 {t('progress.achievements')}</div>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                {[{ic:'⭐',n:'Perfect Sessions (100%)',v: sessions.filter(s => s.score === 100).length + 'x'},{ic:'🎯',n:'Completed Sessions',v: sessions.filter(s => s.status === 'done').length + 'x'},{ic:'📅',n:'Days with sessions',v: new Set(sessions.map(s => new Date(s.endTime).toDateString())).size + ' days'},{ic:'⏳',n:'Total Learning Time',v: totalHours + ' hours'},{ic:'📊',n:'Overall Focus Score',v: overallAvgScore + '%'},{ic:'🛡️',n:'Total Distractions Blocked',v: totalDistractions + 'x'}].map((a,i) => (
+                {[{ic:'⭐',n:t('progress.perfectSessions'),v: sessions.filter(s => s.score === 100).length + 'x'},{ic:'🎯',n:t('progress.completedSessions'),v: sessions.filter(s => s.status === 'done').length + 'x'},{ic:'📅',n:t('progress.daysWithSessions'),v: new Set(sessions.map(s => new Date(s.endTime).toDateString())).size + ' days'},{ic:'⏳',n:t('progress.totalLearningTime'),v: totalHours + ' hours'},{ic:'📊',n:t('progress.overallFocusScore'),v: overallAvgScore + '%'},{ic:'🛡️',n:t('progress.totalDistractionsBlocked'),v: totalDistractions + 'x'}].map((a,i) => (
                   <div key={i} className="sl-item"><div className="sl-ic">{a.ic}</div><div className="sl-info"><div className="sl-name">{a.n}</div></div><div className="sl-val">{a.v}</div></div>
                 ))}
               </div>
@@ -265,18 +267,18 @@ export default function Progress() {
         {/* HISTORY */}
         {tab === 'history' && (
           <div className="card">
-            <div className="ctitle">🕐 All Session History</div>
+            <div className="ctitle">🕐 {t('progress.allSessionHistory')}</div>
             <div className="hist-filter">
               {['all','done','partial','pomodoro','custom'].map(f => (
                 <button key={f} className={`hf-btn ${histFilter===f?'active':''}`} onClick={() => setHistFilter(f)}>
-                  {f==='all'?'All':f==='done'?'Completed':f==='partial'?'Partial':f==='pomodoro'?'Pomodoro':'Custom'}
+                  {f==='all'?t('progress.filterAll'):f==='done'?t('progress.filterCompleted'):f==='partial'?t('progress.filterPartial'):f==='pomodoro'?t('progress.filterPomodoro'):t('progress.filterCustom')}
                 </button>
               ))}
             </div>
             <div className="hist-list">
               {filteredHist.length === 0 && (
                 <div style={{ textAlign:'center', padding:'24px 0', color:'var(--text3)', fontSize:'.85rem' }}>
-                  No session history yet. <Link to="/session-setup" style={{ color:'var(--accent)', textDecoration:'none', fontWeight:600 }}>Start your first session →</Link>
+                  {t('progress.noHistory')} <Link to="/session-setup" style={{ color:'var(--accent)', textDecoration:'none', fontWeight:600 }}>{t('dashboard.startFirst')}</Link>
                 </div>
               )}
               {filteredHist.map((h,i) => (
@@ -286,7 +288,7 @@ export default function Progress() {
           </div>
         )}
 
-        <div className="login-hint">🔒 Full history & data export only for logged-in users. <Link to="/auth">Sign in now</Link> to access all progress features.</div>
+        <div className="login-hint">🔒 {t('progress.fullHistoryLogin')}<Link to="/auth">{t('progress.signInNow')}</Link>{t('progress.accessFeatures')}</div>
       </main>
     </>
   )

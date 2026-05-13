@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const CIRC = 2 * Math.PI * 100
 
@@ -39,6 +40,7 @@ function saveCompletedSession(config, elapsed, total, distCnt, status) {
 
 export default function ActiveSession() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const config = useRef(getSessionConfig()).current
   const TOTAL = config.duration * 60
 
@@ -192,14 +194,14 @@ export default function ActiveSession() {
     <>
       <nav>
         <Link className="nav-logo" to="/"><span className="dot"></span>Focusify</Link>
-        <div className="live-badge"><div className="pulse"></div>Active Session</div>
+        <div className="live-badge"><div className="pulse"></div>{t('nav.activeSession') || 'Active Session'}</div>
         <button className="theme-btn" onClick={toggleTheme} id="thbtn">🌿</button>
       </nav>
 
-      <main style={{ paddingTop: 'calc(var(--nav-h) + 36px)', paddingBottom: 64, maxWidth: 700, margin: '0 auto', paddingLeft: 28, paddingRight: 28 }}>
+      <main className="container xnarrow">
         <div className="timer-wrap">
           <div className="sess-label">
-            {config.type === 'Pomodoro' ? '🍅' : '✏️'} {config.type} · {config.duration} Minutes
+            {config.type === 'Pomodoro' ? '🍅' : '✏️'} {config.type} · {config.duration} {t('setup.minutes')}
             {config.name !== 'Unnamed Session' && <span style={{ display: 'block', marginTop: 6, fontSize: '.85rem', letterSpacing: '.02em', textTransform: 'none' }}>📖 {config.name}</span>}
           </div>
           <div className="ring-outer">
@@ -209,14 +211,14 @@ export default function ActiveSession() {
             </svg>
             <div className="ring-center">
               <div className={`timer-num ${paused ? 'paused' : ''}`}>{fmt(remaining)}</div>
-              <div className="timer-sub">{finished ? 'Session completed! 🎉' : paused ? 'Session paused — open Focus Control Panel' : 'Session running…'}</div>
+              <div className="timer-sub">{finished ? t('active.sessionCompleted') : paused ? t('active.sessionPaused') : t('active.sessionRunning')}</div>
             </div>
           </div>
 
           <div className="status-row">
-            <div className={`sbadge ${paused ? 'paused' : 'running'}`}>{finished ? '✅ Completed' : paused ? '⏸ Paused' : '● Running'}</div>
+            <div className={`sbadge ${paused ? 'paused' : 'running'}`}>{finished ? `✅ ${t('dashboard.completed')}` : paused ? `⏸ ${t('active.paused') || 'Paused'}` : `● ${t('active.running') || 'Running'}`}</div>
             <div className="info-pill">{config.ambience}</div>
-            <div className="info-pill">{config.focusMode ? '🛡️ Focus Mode ON' : '🛡️ Focus Mode OFF'}</div>
+            <div className="info-pill">{config.focusMode ? `🛡️ ${t('active.fmOn') || 'Focus Mode ON'}` : `🛡️ ${t('active.fmOff') || 'Focus Mode OFF'}`}</div>
           </div>
 
           <div className="controls">
@@ -228,30 +230,30 @@ export default function ActiveSession() {
 
         {/* Progress bar */}
         <div className="card" style={{ marginBottom: 14 }}>
-          <div className="ctitle">📊 Session Progress</div>
+          <div className="ctitle">📊 {t('active.sessionProgress') || 'Session Progress'}</div>
           <div className="pb-row">
-            <div className="pb-labels"><span>Elapsed time</span><span>{pct}%</span></div>
+            <div className="pb-labels"><span>{t('active.elapsedTime') || 'Elapsed time'}</span><span>{pct}%</span></div>
             <div className="pb"><div className="pb-fill" style={{ width: pct + '%' }}></div></div>
           </div>
           <div className="stat-row">
-            <div className="sr-i"><div className="sl">Elapsed</div><div className="sv">{fmt(elapsed)}</div></div>
-            <div className="sr-i"><div className="sl">Remaining</div><div className="sv">{fmt(remaining)}</div></div>
-            <div className="sr-i"><div className="sl">Today's Sessions</div><div className="sv">{todaySessions}</div></div>
-            <div className="sr-i"><div className="sl">Distractions Prevented</div><div className="sv">{distCnt}</div></div>
+            <div className="sr-i"><div className="sl">{t('active.elapsed') || 'Elapsed'}</div><div className="sv">{fmt(elapsed)}</div></div>
+            <div className="sr-i"><div className="sl">{t('active.remaining') || 'Remaining'}</div><div className="sv">{fmt(remaining)}</div></div>
+            <div className="sr-i"><div className="sl">{t('active.todaysSessions') || "Today's Sessions"}</div><div className="sv">{todaySessions}</div></div>
+            <div className="sr-i"><div className="sl">{t('active.distractionsPrevented') || 'Distractions Prevented'}</div><div className="sv">{distCnt}</div></div>
           </div>
         </div>
 
         {/* Focus Control Panel */}
         <div className={`card fcp ${showFCP ? 'show' : ''}`}>
-          <div className="ctitle">🎛️ Focus Control Panel</div>
-          <p style={{ fontSize: '.8rem', color: 'var(--text2)', marginBottom: 12 }}>Adjust settings while the session is paused.</p>
+          <div className="ctitle">🎛️ {t('active.fcpTitle') || 'Focus Control Panel'}</div>
+          <p style={{ fontSize: '.8rem', color: 'var(--text2)', marginBottom: 12 }}>{t('active.fcpDesc') || 'Adjust settings while the session is paused.'}</p>
           <div className="fcp-grid">
-            <div className="fcp-row"><div><div className="fcp-l">Focus Mode</div><div className="fcp-s">Block distractions</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="fcp-row"><div><div className="fcp-l">Ambience</div><div className="fcp-s">Background sound</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="fcp-row"><div><div className="fcp-l">Notifications</div><div className="fcp-s">All blocked</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="fcp-row"><div><div className="fcp-l">Reminder</div><div className="fcp-s">Break alert</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
+            <div className="fcp-row"><div><div className="fcp-l">{t('setup.focusMode') || 'Focus Mode'}</div><div className="fcp-s">{t('active.fcpBlock') || 'Block distractions'}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+            <div className="fcp-row"><div><div className="fcp-l">{t('setup.ambience') || 'Ambience'}</div><div className="fcp-s">{t('active.fcpBgSound') || 'Background sound'}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+            <div className="fcp-row"><div><div className="fcp-l">{t('settings.notifications') || 'Notifications'}</div><div className="fcp-s">{t('active.fcpAllBlocked') || 'All blocked'}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+            <div className="fcp-row"><div><div className="fcp-l">{t('active.fcpReminder') || 'Reminder'}</div><div className="fcp-s">{t('active.fcpBreakAlert') || 'Break alert'}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
           </div>
-          <div className="fcp-note">💡 Session paused. Press ▶ to continue or ⏹ to stop the session.</div>
+          <div className="fcp-note">💡 {t('active.fcpNote') || 'Session paused. Press ▶ to continue or ⏹ to stop the session.'}</div>
         </div>
       </main>
 
@@ -259,20 +261,20 @@ export default function ActiveSession() {
       <div className={`overlay ${showDistract ? 'show' : ''}`}>
         <div className="ov-card">
           <span className="ov-icon">🚨</span>
-          <h2>Stay focused!</h2>
-          <p>You tried to switch tabs, windows, or leave the session. Focus Mode is active to keep you concentrated on your learning. Complete your session and achieve your goal! 💪</p>
-          <button className="btn-back" onClick={() => setShowDistract(false)}>⬅ Back to Session</button>
+          <h2>{t('active.distractTitle') || 'Stay focused!'}</h2>
+          <p>{t('active.distractDesc') || 'You tried to switch tabs, windows, or leave the session. Focus Mode is active to keep you concentrated on your learning. Complete your session and achieve your goal! 💪'}</p>
+          <button className="btn-back" onClick={() => setShowDistract(false)}>⬅ {t('active.backToSession') || 'Back to Session'}</button>
         </div>
       </div>
 
       {/* STOP OVERLAY */}
       <div className={`stop-overlay ${showStop ? 'show' : ''}`}>
         <div className="stop-card">
-          <h2>⏹ Stop Session?</h2>
-          <p>The session will be stopped early. The progress made so far will still be saved in the summary.</p>
+          <h2>⏹ {t('active.stopSessionTitle') || 'Stop Session?'}</h2>
+          <p>{t('active.stopSessionDesc') || 'The session will be stopped early. The progress made so far will still be saved in the summary.'}</p>
           <div className="stop-btns">
-            <button className="btn-confirm-stop" onClick={handleStop}>Stop</button>
-            <button className="btn-cancel-stop" onClick={() => setShowStop(false)}>Continue</button>
+            <button className="btn-confirm-stop" onClick={handleStop}>{t('active.stopBtn') || 'Stop'}</button>
+            <button className="btn-cancel-stop" onClick={() => setShowStop(false)}>{t('active.continueBtn') || 'Continue'}</button>
           </div>
         </div>
       </div>

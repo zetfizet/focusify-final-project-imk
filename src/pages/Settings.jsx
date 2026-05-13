@@ -1,30 +1,44 @@
 import { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import Navbar from '../components/Navbar'
 
 export default function Settings() {
   const [sec, setSec] = useState('account')
   const [activeDef, setActiveDef] = useState(1)
   const { isAuthenticated, user, logout } = useContext(AuthContext)
+  const { t, language, setLanguage } = useLanguage()
   const [profileData, setProfileData] = useState({
     firstName: user?.first_name || '',
     lastName: user?.last_name || '',
     email: user?.email || ''
   })
+  const [toastMsg, setToastMsg] = useState('')
+  const [showToast, setShowToast] = useState(false)
 
-  function toggleThemeFromToggle() {
+  const showNotification = (msg) => {
+    setToastMsg(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+  const [localLanguage, setLocalLanguage] = useState(language)
+  const [localDarkMode, setLocalDarkMode] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
+  const [localAnimations, setLocalAnimations] = useState(true)
+
+  const handleSaveAppearance = () => {
+    setLanguage(localLanguage)
     const h = document.documentElement
-    const d = h.getAttribute('data-theme') === 'dark'
-    h.setAttribute('data-theme', d ? 'light' : 'dark')
+    h.setAttribute('data-theme', localDarkMode ? 'dark' : 'light')
     const btn = document.getElementById('thbtn')
-    if (btn) btn.textContent = d ? '🌿' : '🌙'
+    if (btn) btn.textContent = localDarkMode ? '🌙' : '🌿'
+    showNotification('✅ Appearance updated successfully!')
   }
 
   function confirmDanger(type) {
     const msgs = { reset: 'Reset all progress? This cannot be undone.', delete: 'Delete account permanently? All data will be lost forever.' }
     if (confirm(msgs[type])) {
-      alert(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
+      showNotification(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
       if (type === 'delete') {
         logout()
       }
@@ -32,24 +46,28 @@ export default function Settings() {
   }
 
   const handleSaveProfile = () => {
-    alert('✅ Profile updated successfully!')
+    showNotification('✅ Profile updated successfully!')
+  }
+
+  const handleGenericSave = (msg) => {
+    showNotification(`✅ ${msg}`)
   }
 
   const navItems = [
-    { id: 'account', icon: '👤', label: 'Account Settings' },
-    { id: 'session', icon: '⏱️', label: 'Default Session' },
-    { id: 'notif', icon: '🔔', label: 'Notifications' },
-    { id: 'appear', icon: '🎨', label: 'Appearance' },
+    { id: 'account', icon: '👤', label: t('settings.accountSettings') },
+    { id: 'session', icon: '⏱️', label: t('settings.defaultSession') },
+    { id: 'notif', icon: '🔔', label: t('settings.notifications') },
+    { id: 'appear', icon: '🎨', label: t('settings.appearance') },
     { id: 'divider' },
-    { id: 'privacy', icon: '🔒', label: 'Privacy & Data' },
-    { id: 'danger', icon: '🗑️', label: 'Delete Account', style: { color: '#e74c3c' } },
+    { id: 'privacy', icon: '🔒', label: t('settings.privacyDataTitle') || 'Privacy & Data' },
+    { id: 'danger', icon: '🗑️', label: t('settings.deleteAccount'), style: { color: '#e74c3c' } },
   ]
 
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 'calc(var(--nav-h) + 32px)', paddingBottom: 64, maxWidth: 820, margin: '0 auto', paddingLeft: 28, paddingRight: 28 }}>
-        <div className="page-hdr"><h1>⚙️ Settings</h1><p>Manage your account and app preferences.</p></div>
+      <main className="container medium">
+        <div className="page-hdr"><h1>⚙️ {t('settings.title')}</h1><p>{t('settings.subtitle')}</p></div>
 
         <div className="settings-layout">
           <div className="settings-nav">
@@ -64,29 +82,29 @@ export default function Settings() {
             {/* ACCOUNT */}
             {sec === 'account' && (
               <div className="card">
-                <div className="ctitle">👤 Account Settings</div>
+                <div className="ctitle">👤 {t('settings.accountSettings')}</div>
                 {!isAuthenticated ? (
                   <>
-                    <div className="guest-cta"><p>You're not logged in. Sign in or register to manage your account and save your learning data persistently.</p><Link to="/auth" className="btn-login-cta">🔐 Sign In / Register Free</Link></div>
-                    <div className="avatar-row"><div className="avatar">🌿</div><div className="avatar-info"><h3>Guest User</h3><p>Not logged in · Data only saved in this session</p><button className="btn-change-ava">Change Photo</button></div></div>
-                    <div className="frow"><div className="fgroup"><label>First Name</label><input type="text" placeholder="First name" disabled /></div><div className="fgroup"><label>Last Name</label><input type="text" placeholder="Last name" disabled /></div></div>
-                    <div className="fgroup"><label>Email</label><input type="email" placeholder="Sign in to fill email" disabled /></div>
-                    <div className="fgroup"><label>University / Institution</label><input type="text" placeholder="Sign in to fill" disabled /></div>
-                    <div className="fgroup"><label>Major</label><input type="text" placeholder="Sign in to fill" disabled /></div>
-                    <button className="btn-save-set" disabled style={{ opacity: .5, cursor: 'not-allowed' }}>Save Changes</button>
+                    <div className="guest-cta"><p>{t('settings.guestCta')}</p><Link to="/auth" className="btn-login-cta">{t('settings.signInFree')}</Link></div>
+                    <div className="avatar-row"><div className="avatar">🌿</div><div className="avatar-info"><h3>{t('settings.guestUser')}</h3><p>{t('settings.guestDesc')}</p><button className="btn-change-ava">{t('settings.changePhoto')}</button></div></div>
+                    <div className="frow"><div className="fgroup"><label>{t('settings.firstName')}</label><input type="text" placeholder={t('settings.firstName')} disabled /></div><div className="fgroup"><label>{t('settings.lastName')}</label><input type="text" placeholder={t('settings.lastName')} disabled /></div></div>
+                    <div className="fgroup"><label>{t('settings.email')}</label><input type="email" placeholder="Sign in to fill email" disabled /></div>
+                    <div className="fgroup"><label>{t('settings.university')}</label><input type="text" placeholder="Sign in to fill" disabled /></div>
+                    <div className="fgroup"><label>{t('settings.major')}</label><input type="text" placeholder="Sign in to fill" disabled /></div>
+                    <button className="btn-save-set" disabled style={{ opacity: .5, cursor: 'not-allowed' }}>{t('settings.saveChanges')}</button>
                   </>
                 ) : (
                   <>
-                    <div style={{ padding: '12px', background: '#efe', border: '1px solid #cfc', borderRadius: 6, marginBottom: 16, color: '#373', fontSize: '14px' }}>✅ You are logged in as <strong>{user?.email}</strong></div>
-                    <div className="avatar-row"><div className="avatar">👤</div><div className="avatar-info"><h3>{user?.username || 'User'}</h3><p>Active · Logged in · Data synced to backend</p><button className="btn-change-ava" onClick={() => alert('Profile picture upload coming soon!')}>Change Photo</button></div></div>
-                    <div className="frow"><div className="fgroup"><label>First Name</label><input type="text" placeholder="First name" value={profileData.firstName} onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} /></div><div className="fgroup"><label>Last Name</label><input type="text" placeholder="Last name" value={profileData.lastName} onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} /></div></div>
-                    <div className="fgroup"><label>Email</label><input type="email" placeholder="Email" value={profileData.email} disabled style={{ opacity: .6 }} /></div>
-                    <div className="fgroup"><label>University / Institution</label><input type="text" placeholder="Your university or school" /></div>
-                    <div className="fgroup"><label>Major</label><input type="text" placeholder="Your field of study" /></div>
-                    <button className="btn-save-set" onClick={handleSaveProfile}>Save Changes</button>
+                    <div style={{ padding: '12px', background: '#efe', border: '1px solid #cfc', borderRadius: 6, marginBottom: 16, color: '#373', fontSize: '14px' }}>{t('settings.loggedInAs')}<strong>{user?.email}</strong></div>
+                    <div className="avatar-row"><div className="avatar">👤</div><div className="avatar-info"><h3>{user?.username || 'User'}</h3><p>{t('settings.activeLoggedIn')}</p><button className="btn-change-ava" onClick={() => alert('Profile picture upload coming soon!')}>{t('settings.changePhoto')}</button></div></div>
+                    <div className="frow"><div className="fgroup"><label>{t('settings.firstName')}</label><input type="text" placeholder={t('settings.firstName')} value={profileData.firstName} onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} /></div><div className="fgroup"><label>{t('settings.lastName')}</label><input type="text" placeholder={t('settings.lastName')} value={profileData.lastName} onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} /></div></div>
+                    <div className="fgroup"><label>{t('settings.email')}</label><input type="email" placeholder={t('settings.email')} value={profileData.email} disabled style={{ opacity: .6 }} /></div>
+                    <div className="fgroup"><label>{t('settings.university')}</label><input type="text" placeholder={t('settings.university')} /></div>
+                    <div className="fgroup"><label>{t('settings.major')}</label><input type="text" placeholder={t('settings.major')} /></div>
+                    <button className="btn-save-set" onClick={handleSaveProfile}>{t('settings.saveChanges')}</button>
                     <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
-                      <h4 style={{ marginBottom: 12 }}>Danger Zone</h4>
-                      <button onClick={() => confirmDanger('delete')} style={{ padding: '10px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '14px' }}>🗑️ Delete Account</button>
+                      <h4 style={{ marginBottom: 12 }}>{t('settings.dangerZone')}</h4>
+                      <button onClick={() => confirmDanger('delete')} style={{ padding: '10px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '14px' }}>{t('settings.deleteAccountBtn')}</button>
                     </div>
                   </>
                 )}
@@ -97,23 +115,23 @@ export default function Settings() {
             {sec === 'session' && (
               <>
                 <div className="card">
-                  <div className="ctitle">⏱️ Default Session</div>
-                  <div className="fgroup"><label>Default Method</label><select defaultValue="pomo"><option value="pomo">🍅 Pomodoro (25 minutes)</option><option value="custom">✏️ Custom Duration</option></select></div>
-                  <div className="fgroup"><label>Default Pomodoro Duration</label>
+                  <div className="ctitle">⏱️ {t('settings.defaultSession')}</div>
+                  <div className="fgroup"><label>{t('settings.defaultMethod')}</label><select defaultValue="pomo"><option value="pomo">{t('settings.pomo25')}</option><option value="custom">{t('settings.customDuration')}</option></select></div>
+                  <div className="fgroup"><label>{t('settings.defaultPomo')}</label>
                     <div className="def-grid">
-                      {[{n:"15'",l:'Short'},{n:"25'",l:'Standard'},{n:"45'",l:'Long'},{n:"50'",l:'Deep Work'}].map((d,i) => (
+                      {[{n:"15'",l:t('settings.short')},{n:"25'",l:t('settings.standard')},{n:"45'",l:t('settings.long')},{n:"50'",l:t('settings.deepWork')}].map((d,i) => (
                         <div key={i} className={`def-item ${activeDef===i?'active':''}`} onClick={() => setActiveDef(i)}><div className="def-n">{d.n}</div><div className="def-l">{d.l}</div></div>
                       ))}
                     </div>
                   </div>
-                  <div className="fgroup"><label>Default Ambience</label><select defaultValue="hutan"><option value="hening">🤫 Silence</option><option value="hutan">🌿 Forest</option><option value="hujan">🌧️ Rain</option><option value="kafe">☕ Cafe</option><option value="laut">🌊 Ocean</option><option value="api">🔥 Fire</option><option value="lofi">🎵 Lo-fi</option></select></div>
-                  <div className="trow"><div className="tinfo"><div className="tl">Default Focus Mode</div><div className="ts">Automatically enable for every new session</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                  <div style={{ marginTop: 14 }}><button className="btn-save-set">Save Default Session</button></div>
+                  <div className="fgroup"><label>{t('settings.defaultAmbience')}</label><select defaultValue="hutan"><option value="hening">{t('settings.silence')}</option><option value="hutan">{t('settings.forest')}</option><option value="hujan">{t('settings.rain')}</option><option value="kafe">{t('settings.cafe')}</option><option value="laut">{t('settings.ocean')}</option><option value="api">{t('settings.fire')}</option><option value="lofi">{t('settings.lofi')}</option></select></div>
+                  <div className="trow"><div className="tinfo"><div className="tl">{t('settings.defaultFocusMode')}</div><div className="ts">{t('settings.defaultFocusModeDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+                  <div style={{ marginTop: 14 }}><button className="btn-save-set" onClick={() => handleGenericSave(t('settings.saveDefault'))}>{t('settings.saveDefault')}</button></div>
                 </div>
                 <div className="card">
-                  <div className="ctitle">🎯 Learning Target</div>
-                  <div className="frow"><div className="fgroup"><label>Target Sessions / Day</label><input type="number" defaultValue="4" min="1" max="12" /></div><div className="fgroup"><label>Target Hours / Week</label><input type="number" defaultValue="25" min="1" max="100" /></div></div>
-                  <button className="btn-save-set">Save Targets</button>
+                  <div className="ctitle">🎯 {t('settings.learningTarget')}</div>
+                  <div className="frow"><div className="fgroup"><label>{t('settings.targetSessions')}</label><input type="number" defaultValue="4" min="1" max="12" /></div><div className="fgroup"><label>{t('settings.targetHours')}</label><input type="number" defaultValue="25" min="1" max="100" /></div></div>
+                  <button className="btn-save-set" onClick={() => handleGenericSave(t('settings.saveTargets'))}>{t('settings.saveTargets')}</button>
                 </div>
               </>
             )}
@@ -121,48 +139,61 @@ export default function Settings() {
             {/* NOTIFIKASI */}
             {sec === 'notif' && (
               <div className="card">
-                <div className="ctitle">🔔 Notification Settings</div>
-                <div className="trow"><div className="tinfo"><div className="tl">Daily Learning Reminder</div><div className="ts">Reminder notification to start a session</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">Break Reminder</div><div className="ts">Alert after session ends to take a break</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">Streak Achievement</div><div className="ts">Notification when you maintain your streak</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">Weekly Summary</div><div className="ts">Email progress summary every week</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
-                <div className="fgroup" style={{ marginTop: 16 }}><label>Learning Reminder Time</label><input type="time" defaultValue="19:30" /></div>
-                <button className="btn-save-set">Save Notifications</button>
+                <div className="ctitle">🔔 {t('settings.notificationSettings')}</div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dailyReminder')}</div><div className="ts">{t('settings.dailyReminderDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.breakReminder')}</div><div className="ts">{t('settings.breakReminderDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.streakAchievement')}</div><div className="ts">{t('settings.streakAchievementDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.weeklySummary')}</div><div className="ts">{t('settings.weeklySummaryDesc')}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
+                <div className="fgroup" style={{ marginTop: 16 }}><label>{t('settings.reminderTime')}</label><input type="time" defaultValue="19:30" /></div>
+                <button className="btn-save-set" onClick={() => handleGenericSave(t('settings.saveNotifications'))}>{t('settings.saveNotifications')}</button>
               </div>
             )}
 
             {/* TAMPILAN */}
             {sec === 'appear' && (
               <div className="card">
-                <div className="ctitle">🎨 Appearance &amp; Theme</div>
-                <div className="trow"><div className="tinfo"><div className="tl">Dark Mode</div><div className="ts">Use dark theme for evening use</div></div><label className="tog"><input type="checkbox" onChange={toggleThemeFromToggle} /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">Animations &amp; Transitions</div><div className="ts">Enable page and card animations</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="fgroup" style={{ marginTop: 16 }}><label>Interface Language</label><select><option>🇬🇧 English</option><option>🇮🇩 Bahasa Indonesia</option></select></div>
-                <button className="btn-save-set">Save Appearance</button>
+                <div className="ctitle">🎨 {t('settings.appearanceTheme')}</div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.darkMode')}</div><div className="ts">{t('settings.darkModeDesc')}</div></div><label className="tog"><input type="checkbox" checked={localDarkMode} onChange={(e) => setLocalDarkMode(e.target.checked)} /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.animations')}</div><div className="ts">{t('settings.animationsDesc')}</div></div><label className="tog"><input type="checkbox" checked={localAnimations} onChange={(e) => setLocalAnimations(e.target.checked)} /><span className="sldr"></span></label></div>
+                <div className="fgroup" style={{ marginTop: 16 }}>
+                  <label>{t('settings.interfaceLang')}</label>
+                  <select value={localLanguage} onChange={(e) => setLocalLanguage(e.target.value)}>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="id">🇮🇩 Bahasa Indonesia</option>
+                  </select>
+                </div>
+                <button className="btn-save-set" onClick={handleSaveAppearance}>{t('settings.saveAppearance')}</button>
               </div>
             )}
 
             {/* PRIVASI */}
             {sec === 'privacy' && (
               <div className="card">
-                <div className="ctitle">🔒 Privacy &amp; Data</div>
-                <div className="trow"><div className="tinfo"><div className="tl">Usage Analytics</div><div className="ts">Help us improve Focusify with anonymous data</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">Data Sync</div><div className="ts">Save progress to cloud (requires sign in)</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
-                <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}><button className="btn-save-set">Download My Data</button></div>
+                <div className="ctitle">🔒 {t('settings.privacyDataTitle')}</div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.usageAnalytics')}</div><div className="ts">{t('settings.usageAnalyticsDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dataSync')}</div><div className="ts">{t('settings.dataSyncDesc')}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
+                <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}><button className="btn-save-set">{t('settings.downloadData')}</button></div>
               </div>
             )}
 
             {/* DANGER */}
             {sec === 'danger' && (
               <div className="card">
-                <div className="ctitle" style={{ color: '#e74c3c' }}>⚠️ Danger Zone</div>
-                <div className="danger-row"><div className="dr-info"><div className="drl">Reset All Progress</div><div className="drs">Delete all session history and statistics. Cannot be undone.</div></div><button className="btn-danger" onClick={() => confirmDanger('reset')}>Reset</button></div>
-                <div className="danger-row"><div className="dr-info"><div className="drl">Delete Account Permanently</div><div className="drs">All data and account will be deleted forever. Cannot be undone.</div></div><button className="btn-danger" onClick={() => confirmDanger('delete')}>Delete Account</button></div>
+                <div className="ctitle" style={{ color: '#e74c3c' }}>⚠️ {t('settings.dangerZone')}</div>
+                <div className="danger-row"><div className="dr-info"><div className="drl">{t('settings.resetProgress')}</div><div className="drs">{t('settings.resetProgressDesc')}</div></div><button className="btn-danger" onClick={() => confirmDanger('reset')}>{t('settings.resetBtn')}</button></div>
+                <div className="danger-row"><div className="dr-info"><div className="drl">{t('settings.deletePermanently')}</div><div className="drs">{t('settings.deletePermanentlyDesc')}</div></div><button className="btn-danger" onClick={() => confirmDanger('delete')}>{t('settings.deleteAccountBtn')}</button></div>
               </div>
             )}
           </div>
         </div>
       </main>
+
+      <div className="toast-container">
+        <div className={`toast ${showToast ? 'show' : ''}`}>
+          <div className="toast-icon">✨</div>
+          <div className="toast-msg">{toastMsg}</div>
+        </div>
+      </div>
     </>
   )
 }

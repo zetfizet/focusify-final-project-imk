@@ -1,11 +1,13 @@
 import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import '../styles/auth.css'
 
 const AuthPage = () => {
   const navigate = useNavigate()
   const { login, register, loading, error } = useContext(AuthContext)
+  const { t } = useLanguage()
 
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({
@@ -94,8 +96,8 @@ const AuthPage = () => {
       <div className="auth-card">
         <div className="auth-header">
           <h1>🎯 Focusify</h1>
-          <h2>{isLogin ? 'Welcome Back' : 'Get Started'}</h2>
-          <p>{isLogin ? 'Login to your account' : 'Create your account'}</p>
+          <h2>{isLogin ? t('auth.welcomeBack') : t('auth.getStarted')}</h2>
+          <p>{isLogin ? t('auth.loginToAccount') : t('auth.createAccount')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -108,7 +110,7 @@ const AuthPage = () => {
 
           {/* Email Input */}
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.email')}</label>
             <input
               type="email"
               id="email"
@@ -124,7 +126,7 @@ const AuthPage = () => {
           {/* Username Input (Register Only) */}
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">{t('auth.username')}</label>
               <input
                 type="text"
                 id="username"
@@ -135,13 +137,13 @@ const AuthPage = () => {
                 disabled={loading}
                 required
               />
-              <small>3-30 characters, letters and numbers only</small>
+              <small>{t('auth.usernameHint')}</small>
             </div>
           )}
 
           {/* Password Input */}
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.password')}</label>
             <input
               type="password"
               id="password"
@@ -152,13 +154,13 @@ const AuthPage = () => {
               disabled={loading}
               required
             />
-            {!isLogin && <small>Minimum 8 characters</small>}
+            {!isLogin && <small>{t('auth.passwordHint')}</small>}
           </div>
 
           {/* Confirm Password Input (Register Only) */}
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">{t('auth.confirmPassword')}</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -178,34 +180,34 @@ const AuthPage = () => {
             className="auth-button"
             disabled={loading}
           >
-            {loading ? 'Loading...' : (isLogin ? 'Login' : 'Register')}
+            {loading ? t('auth.loading') : (isLogin ? t('auth.loginBtn') : t('auth.registerBtn'))}
           </button>
         </form>
 
         {/* Toggle Mode */}
         <div className="auth-footer">
           <p>
-            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}
             <button
               type="button"
               className="toggle-button"
               onClick={toggleMode}
               disabled={loading}
             >
-              {isLogin ? 'Register' : 'Login'}
+              {isLogin ? t('auth.registerBtn') : t('auth.loginBtn')}
             </button>
           </p>
         </div>
 
         {/* Guest Mode Info */}
         <div className="guest-info">
-          <p>💡 Or continue as guest and use localStorage only</p>
+          <p>{t('auth.guestMode')}</p>
           <button
             type="button"
             className="guest-button"
             onClick={() => navigate('/')}
           >
-            Continue as Guest
+            {t('auth.continueGuest')}
           </button>
         </div>
       </div>
