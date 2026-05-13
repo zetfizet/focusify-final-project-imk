@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
+import { audioEngine } from '../utils/audioEngine'
 
 const CIRC = 2 * Math.PI * 100
 
@@ -44,6 +45,18 @@ export default function ActiveSession() {
   const config = useRef(getSessionConfig()).current
   const TOTAL = config.duration * 60
 
+  const getAmbienceType = (amb) => {
+    if (!amb) return null
+    if (amb.includes('🌧️')) return 'rain'
+    if (amb.includes('🌿')) return 'forest'
+    if (amb.includes('☕')) return 'cafe'
+    if (amb.includes('🌊')) return 'beach'
+    if (amb.includes('🔥')) return 'fire'
+    if (amb.includes('🎵')) return 'lofi'
+    return null
+  }
+  const ambType = getAmbienceType(config.ambience)
+
   const [remaining, setRemaining] = useState(TOTAL)
   const [paused, setPaused] = useState(false)
   const [distCnt, setDistCnt] = useState(0)
@@ -86,11 +99,22 @@ export default function ActiveSession() {
       setDistCnt(c => c + 1)
       setShowDistract(true)
     }, 7000)
-    return () => { clearInterval(intervalRef.current); clearTimeout(demoTimeout) }
-  }, [navigate, config, TOTAL])
+
+    // Play Ambience Sound
+    if (ambType && !pausedRef.current) {
+      audioEngine.play(ambType)
+    }
+
+    return () => { 
+      clearInterval(intervalRef.current)
+      clearTimeout(demoTimeout)
+      audioEngine.stop()
+    }
+  }, [navigate, config, TOTAL, ambType])
 
   function handleStop() {
     clearInterval(intervalRef.current)
+    audioEngine.stop()
     const elapsed = TOTAL - remaining
     saveCompletedSession(config, elapsed, TOTAL, distCntRef.current, elapsed >= TOTAL * 0.5 ? 'partial' : 'partial')
     navigate('/session-summary')
@@ -100,12 +124,23 @@ export default function ActiveSession() {
     const next = !paused
     setPaused(next)
     pausedRef.current = next
-    if (next) setShowFCP(true)
+    if (next) {
+      setShowFCP(true)
+      audioEngine.stop()
+    } else {
+      if (ambType) audioEngine.play(ambType)
+    }
   }
 
   function toggleFCPPanel() {
-    if (!paused) { setPaused(true); pausedRef.current = true; setShowFCP(true) }
-    else setShowFCP(f => !f)
+    if (!paused) { 
+      setPaused(true)
+      pausedRef.current = true
+      setShowFCP(true)
+      audioEngine.stop()
+    } else {
+      setShowFCP(f => !f)
+    }
   }
 
   // Focus lock - prevent tab switching and window switching
