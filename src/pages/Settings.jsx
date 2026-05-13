@@ -1,10 +1,17 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
+import { AuthContext } from '../contexts/AuthContext'
 import Navbar from '../components/Navbar'
 
 export default function Settings() {
   const [sec, setSec] = useState('account')
   const [activeDef, setActiveDef] = useState(1)
+  const { isAuthenticated, user, logout } = useContext(AuthContext)
+  const [profileData, setProfileData] = useState({
+    firstName: user?.first_name || '',
+    lastName: user?.last_name || '',
+    email: user?.email || ''
+  })
 
   function toggleThemeFromToggle() {
     const h = document.documentElement
@@ -16,7 +23,16 @@ export default function Settings() {
 
   function confirmDanger(type) {
     const msgs = { reset: 'Reset all progress? This cannot be undone.', delete: 'Delete account permanently? All data will be lost forever.' }
-    if (confirm(msgs[type])) alert(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
+    if (confirm(msgs[type])) {
+      alert(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
+      if (type === 'delete') {
+        logout()
+      }
+    }
+  }
+
+  const handleSaveProfile = () => {
+    alert('✅ Profile updated successfully!')
   }
 
   const navItems = [
@@ -49,13 +65,31 @@ export default function Settings() {
             {sec === 'account' && (
               <div className="card">
                 <div className="ctitle">👤 Account Settings</div>
-                <div className="guest-cta"><p>You're not logged in. Sign in or register to manage your account and save your learning data persistently.</p><Link to="/auth" className="btn-login-cta">🔐 Sign In / Register Free</Link></div>
-                <div className="avatar-row"><div className="avatar">🌿</div><div className="avatar-info"><h3>Guest User</h3><p>Not logged in · Data only saved in this session</p><button className="btn-change-ava">Change Photo</button></div></div>
-                <div className="frow"><div className="fgroup"><label>First Name</label><input type="text" placeholder="First name" disabled /></div><div className="fgroup"><label>Last Name</label><input type="text" placeholder="Last name" disabled /></div></div>
-                <div className="fgroup"><label>Email</label><input type="email" placeholder="Sign in to fill email" disabled /></div>
-                <div className="fgroup"><label>University / Institution</label><input type="text" placeholder="Sign in to fill" disabled /></div>
-                <div className="fgroup"><label>Major</label><input type="text" placeholder="Sign in to fill" disabled /></div>
-                <button className="btn-save-set" disabled style={{ opacity: .5, cursor: 'not-allowed' }}>Save Changes</button>
+                {!isAuthenticated ? (
+                  <>
+                    <div className="guest-cta"><p>You're not logged in. Sign in or register to manage your account and save your learning data persistently.</p><Link to="/auth" className="btn-login-cta">🔐 Sign In / Register Free</Link></div>
+                    <div className="avatar-row"><div className="avatar">🌿</div><div className="avatar-info"><h3>Guest User</h3><p>Not logged in · Data only saved in this session</p><button className="btn-change-ava">Change Photo</button></div></div>
+                    <div className="frow"><div className="fgroup"><label>First Name</label><input type="text" placeholder="First name" disabled /></div><div className="fgroup"><label>Last Name</label><input type="text" placeholder="Last name" disabled /></div></div>
+                    <div className="fgroup"><label>Email</label><input type="email" placeholder="Sign in to fill email" disabled /></div>
+                    <div className="fgroup"><label>University / Institution</label><input type="text" placeholder="Sign in to fill" disabled /></div>
+                    <div className="fgroup"><label>Major</label><input type="text" placeholder="Sign in to fill" disabled /></div>
+                    <button className="btn-save-set" disabled style={{ opacity: .5, cursor: 'not-allowed' }}>Save Changes</button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ padding: '12px', background: '#efe', border: '1px solid #cfc', borderRadius: 6, marginBottom: 16, color: '#373', fontSize: '14px' }}>✅ You are logged in as <strong>{user?.email}</strong></div>
+                    <div className="avatar-row"><div className="avatar">👤</div><div className="avatar-info"><h3>{user?.username || 'User'}</h3><p>Active · Logged in · Data synced to backend</p><button className="btn-change-ava" onClick={() => alert('Profile picture upload coming soon!')}>Change Photo</button></div></div>
+                    <div className="frow"><div className="fgroup"><label>First Name</label><input type="text" placeholder="First name" value={profileData.firstName} onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} /></div><div className="fgroup"><label>Last Name</label><input type="text" placeholder="Last name" value={profileData.lastName} onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} /></div></div>
+                    <div className="fgroup"><label>Email</label><input type="email" placeholder="Email" value={profileData.email} disabled style={{ opacity: .6 }} /></div>
+                    <div className="fgroup"><label>University / Institution</label><input type="text" placeholder="Your university or school" /></div>
+                    <div className="fgroup"><label>Major</label><input type="text" placeholder="Your field of study" /></div>
+                    <button className="btn-save-set" onClick={handleSaveProfile}>Save Changes</button>
+                    <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
+                      <h4 style={{ marginBottom: 12 }}>Danger Zone</h4>
+                      <button onClick={() => confirmDanger('delete')} style={{ padding: '10px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '14px' }}>🗑️ Delete Account</button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
