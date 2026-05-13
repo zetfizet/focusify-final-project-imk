@@ -135,7 +135,8 @@ export default {
     breakReminder: 'Pengingat Istirahat',
     breakReminderDesc: 'Peringatan setelah sesi berakhir untuk istirahat',
     distractionWarning: 'Peringatan Distraksi',
-    distractionWarningDesc: 'Peringatan jika kamu meninggalkan tab belajar'
+    distractionWarningDesc: 'Peringatan jika kamu meninggalkan tab belajar',
+    lofi: 'Lo-fi'
   },
   active: {
     minutes: 'Menit',

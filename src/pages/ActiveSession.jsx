@@ -48,7 +48,7 @@ export default function ActiveSession() {
     if (!amb) return null
     if (amb.includes('🌧️')) return 'mPZkdNFkNps'
     if (amb.includes('🌿')) return 'xNN7iTA57jM'
-    if (amb.includes('☕')) return 'BO_XwM5D-XU'
+    if (amb.includes('☕')) return 'gaGrHUekGrc'
     if (amb.includes('🌊')) return 'Nep1qytq9JM'
     if (amb.includes('🔥')) return 'L_LUpnjgPso'
     if (amb.includes('🎵')) return 'jfKfPfyJRdk' // Lofi Girl
