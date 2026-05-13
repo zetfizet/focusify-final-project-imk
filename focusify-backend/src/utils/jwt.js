@@ -2,7 +2,18 @@ import jwt from 'jsonwebtoken'
 
 export const generateToken = (userId, type = 'access') => {
   const secret = process.env.JWT_SECRET
-  const expiry = type === 'access' ? process.env.JWT_EXPIRY : process.env.REFRESH_TOKEN_EXPIRY
+  
+  // Use hardcoded defaults if env vars not set (for reliability on Vercel)
+  const expiryMap = {
+    access: process.env.JWT_EXPIRY || '15m',      // 15 minutes
+    refresh: process.env.REFRESH_TOKEN_EXPIRY || '7d'  // 7 days
+  }
+  
+  const expiry = expiryMap[type] || expiryMap.access
+
+  if (!secret) {
+    throw new Error('JWT_SECRET not configured in environment variables')
+  }
 
   return jwt.sign(
     { userId, type },
