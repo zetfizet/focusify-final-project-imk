@@ -28,7 +28,9 @@ function saveCompletedSession(config, elapsed, total, distCnt, status) {
     score: Math.max(0, 100 - (distCnt * 5) - (status === 'partial' ? 15 : 0))
   }
   // Save to localStorage
-  let sessions = []  try { sessions = JSON.parse(localStorage.getItem('focusify_sessions') || '[]') } catch (e) {}
+  let sessions = []  
+  try { 
+    sessions = JSON.parse(localStorage.getItem('focusify_sessions') || '[]') } catch (e) {}
   sessions.unshift(completed)
   localStorage.setItem('focusify_sessions', JSON.stringify(sessions))
   // Also save as last session for summary page
