@@ -175,7 +175,7 @@ export default function Progress() {
 
         {/* DAILY */}
         {tab === 'daily' && (
-          <div className="g2">
+          <div className="g2" style={{ alignItems: 'start' }}>
             <div className="card">
               <div className="ctitle">🎯 {t('progress.dailyTarget')}</div>
               <div className="ring-row">
