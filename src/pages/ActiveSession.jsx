@@ -66,6 +66,7 @@ export default function ActiveSession() {
   const intervalRef = useRef(null)
   const pausedRef = useRef(false) // Align with initial state
   const distCntRef = useRef(0)
+  const allowDistractionRef = useRef(false)
 
   function toggleTheme() {
     const h = document.documentElement
@@ -75,6 +76,14 @@ export default function ActiveSession() {
   }
 
   const fmt = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')
+
+  useEffect(() => {
+    const delayTimer = setTimeout(() => {
+      allowDistractionRef.current = true
+    }, 5000)
+
+    return () => clearTimeout(delayTimer)
+  }, [])
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -92,16 +101,21 @@ export default function ActiveSession() {
         })
       }
     }, 1000)
-    // Demo distraction after 7s
-    const demoTimeout = setTimeout(() => {
-      distCntRef.current += 1
-      setDistCnt(c => c + 1)
-      setShowDistract(true)
-    }, 7000)
+    // Demo distraction after 7s (only if focusMode is enabled)
+    let demoTimeout
+    if (config.focusMode) {
+      demoTimeout = setTimeout(() => {
+        if (allowDistractionRef.current) {
+          distCntRef.current += 1
+          setDistCnt(c => c + 1)
+          setShowDistract(true)
+        }
+      }, 7000)
+    }
 
     return () => { 
       clearInterval(intervalRef.current)
-      clearTimeout(demoTimeout)
+      if (demoTimeout) clearTimeout(demoTimeout)
     }
   }, [navigate, config, TOTAL])
 
@@ -131,9 +145,11 @@ export default function ActiveSession() {
 
   // Focus lock - prevent tab switching and window switching
   useEffect(() => {
+    if (!config.focusMode) return
+
     // Prevent tab switching via visibilitychange
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+      if (document.hidden && allowDistractionRef.current) {
         distCntRef.current += 1
         setDistCnt(c => c + 1)
         setShowDistract(true)
@@ -142,7 +158,7 @@ export default function ActiveSession() {
 
     // Prevent window blur (switching to another window)
     const handleWindowBlur = () => {
-      if (!finished) {
+      if (!finished && allowDistractionRef.current) {
         distCntRef.current += 1
         setDistCnt(c => c + 1)
         setShowDistract(true)
@@ -151,6 +167,7 @@ export default function ActiveSession() {
 
     // Prevent keyboard shortcuts that switch apps/tabs
     const handleKeyDown = (e) => {
+      if (!allowDistractionRef.current) return
       // Alt+Tab, Alt+Esc, Ctrl+Tab, Ctrl+Shift+Tab, Win+Tab
       if ((e.altKey && (e.key === 'Tab' || e.key === 'Escape')) ||
           (e.ctrlKey && (e.key === 'Tab' || (e.key === 'w' && e.shiftKey))) ||
@@ -182,6 +199,7 @@ export default function ActiveSession() {
 
     // Prevent right-click context menu during session
     const handleContextMenu = (e) => {
+      if (!allowDistractionRef.current) return
       e.preventDefault()
       distCntRef.current += 1
       setDistCnt(c => c + 1)
@@ -196,7 +214,7 @@ export default function ActiveSession() {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       document.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [finished])
+  }, [finished, config.focusMode])
 
 
 
