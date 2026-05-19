@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useAuth } from '../hooks/useAuth'
 
 const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
 
@@ -30,6 +31,7 @@ function getDateLabel(isoStr) {
 export default function Dashboard() {
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     const onFocus = () => setSessions(getStoredSessions())
@@ -181,7 +183,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="login-hint">🔒 {t('dashboard.saveProgressDesc')} <Link to="/auth">{t('dashboard.signInLink')}</Link></div>
+        {!isAuthenticated && (
+          <div className="login-hint">🔒 {t('dashboard.saveProgressDesc')} <Link to="/auth">{t('dashboard.signInLink')}</Link></div>
+        )}
       </main>
     </>
   )

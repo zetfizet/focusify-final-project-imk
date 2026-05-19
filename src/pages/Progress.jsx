@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useAuth } from '../hooks/useAuth'
 
 const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
 
@@ -91,6 +92,7 @@ export default function Progress() {
   const [histFilter, setHistFilter] = useState('all')
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     if (['daily','weekly','stats','history'].includes(hash)) setTab(hash)
@@ -288,7 +290,9 @@ export default function Progress() {
           </div>
         )}
 
-        <div className="login-hint">🔒 {t('progress.fullHistoryLogin')}<Link to="/auth">{t('progress.signInNow')}</Link>{t('progress.accessFeatures')}</div>
+        {!isAuthenticated && (
+          <div className="login-hint">🔒 {t('progress.fullHistoryLogin')}<Link to="/auth">{t('progress.signInNow')}</Link>{t('progress.accessFeatures')}</div>
+        )}
       </main>
     </>
   )
