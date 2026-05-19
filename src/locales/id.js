@@ -136,7 +136,8 @@ export default {
     breakReminderDesc: 'Peringatan setelah sesi berakhir untuk istirahat',
     distractionWarning: 'Peringatan Distraksi',
     distractionWarningDesc: 'Peringatan jika kamu meninggalkan tab belajar',
-    lofi: 'Lo-fi'
+    lofi: 'Lo-fi',
+    nameRequired: 'Nama sesi wajib diisi sebelum memulai!'
   },
   active: {
     minutes: 'Menit',

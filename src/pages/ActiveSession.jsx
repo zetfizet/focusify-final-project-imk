@@ -57,14 +57,14 @@ export default function ActiveSession() {
   const videoId = getAmbienceVideoId(config.ambience)
 
   const [remaining, setRemaining] = useState(TOTAL)
-  const [paused, setPaused] = useState(false)
+  const [paused, setPaused] = useState(false) // Revert to autoplay immediately
   const [distCnt, setDistCnt] = useState(0)
   const [showFCP, setShowFCP] = useState(false)
   const [showDistract, setShowDistract] = useState(false)
   const [showStop, setShowStop] = useState(false)
   const [finished, setFinished] = useState(false)
   const intervalRef = useRef(null)
-  const pausedRef = useRef(false)
+  const pausedRef = useRef(false) // Align with initial state
   const distCntRef = useRef(0)
 
   function toggleTheme() {
@@ -309,7 +309,7 @@ export default function ActiveSession() {
           title="Ambience Audio"
           frameBorder="0" 
           allow="autoplay" 
-          style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}
+          style={{ position: 'fixed', top: '0px', left: '0px', width: '1px', height: '1px', opacity: 0.001, pointerEvents: 'none', zIndex: -9999 }}
         ></iframe>
       )}
     </>

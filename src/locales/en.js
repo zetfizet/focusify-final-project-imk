@@ -136,7 +136,8 @@ export default {
     breakReminderDesc: 'Alert after session ends to take a break',
     distractionWarning: 'Distraction Warning',
     distractionWarningDesc: 'Warn if you leave the learning tab',
-    lofi: 'Lo-fi'
+    lofi: 'Lo-fi',
+    nameRequired: 'Session name is required before starting!'
   },
   active: {
     minutes: 'Minutes',

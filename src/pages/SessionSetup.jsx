@@ -7,6 +7,9 @@ export default function SessionSetup() {
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [sessionName, setSessionName] = useState('')
+  const [error, setError] = useState(false)
+  const [toast, setToast] = useState({ show: false, message: '' })
+  const nameInputRef = useRef(null)
   const [mode, setMode] = useState('pomo')
   const [dur, setDur] = useState(25)
   const [activePomo, setActivePomo] = useState(0)
@@ -83,14 +86,23 @@ export default function SessionSetup() {
 
         {/* 0. SESSION NAME */}
         <div className="card">
-          <div className="sec-lbl">📝 {t('setup.sessionName')}</div>
+          <div className="sec-lbl">📝 {t('setup.sessionName')} <span style={{ color: '#ff4d4f', marginLeft: 4 }}>*</span></div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <input
+              ref={nameInputRef}
               type="text"
               placeholder={t('setup.sessionNameHint')}
               value={sessionName}
-              onChange={e => setSessionName(e.target.value)}
+              onChange={e => {
+                setSessionName(e.target.value)
+                if (e.target.value.trim()) {
+                  setError(false)
+                  setToast({ show: false, message: '' })
+                }
+              }}
+              className={error ? 'shake-input' : ''}
               style={{ fontSize: '.9rem' }}
+              required
             />
           </div>
         </div>
@@ -152,9 +164,21 @@ export default function SessionSetup() {
         </div>
 
         <button className="start-btn" onClick={() => {
+          if (!sessionName.trim()) {
+            setError(true)
+            setToast({ show: true, message: t('setup.nameRequired') || 'Session name is required before starting!' })
+            nameInputRef.current?.focus()
+            setTimeout(() => {
+              setError(false)
+            }, 500)
+            setTimeout(() => {
+              setToast({ show: false, message: '' })
+            }, 3500)
+            return
+          }
           const finalDur = mode === 'custom' ? customVal : dur
           const config = {
-            name: sessionName || 'Unnamed Session',
+            name: sessionName,
             duration: finalDur,
             type: mode === 'pomo' ? 'Pomodoro' : 'Custom',
             ambience: ambTxt,
@@ -165,6 +189,12 @@ export default function SessionSetup() {
           navigate('/active-session')
         }}>▶ {t('setup.startSessionBtn')}</button>
       </main>
+      {toast.show && (
+        <div className="toast-notification">
+          <span>⚠️</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
     </>
   )
 }
