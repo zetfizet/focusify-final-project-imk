@@ -92,7 +92,7 @@ export default function Progress() {
   const [histFilter, setHistFilter] = useState('all')
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
 
   useEffect(() => {
     if (['daily','weekly','stats','history'].includes(hash)) setTab(hash)
@@ -290,7 +290,7 @@ export default function Progress() {
           </div>
         )}
 
-        {!isAuthenticated && (
+        {!loading && !isAuthenticated && (
           <div className="login-hint">🔒 {t('progress.fullHistoryLogin')}<Link to="/auth">{t('progress.signInNow')}</Link>{t('progress.accessFeatures')}</div>
         )}
       </main>

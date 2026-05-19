@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useAuth } from '../hooks/useAuth'
+import { performFullDataSync } from '../services/migration'
 
 export default function SessionSummary() {
   const [showSave, setShowSave] = useState(true)
   const [lastSession, setLastSession] = useState(null)
   const [allSessions, setAllSessions] = useState([])
   const { t } = useLanguage()
+  const { isAuthenticated, loading } = useAuth()
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     try {
@@ -18,6 +22,26 @@ export default function SessionSummary() {
       console.error('Error loading session data:', e)
     }
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      const doSync = async () => {
+        setSyncing(true)
+        try {
+          const syncResult = await performFullDataSync()
+          if (syncResult.success) {
+            const sessions = JSON.parse(localStorage.getItem('focusify_sessions') || '[]')
+            setAllSessions(sessions)
+          }
+        } catch (err) {
+          console.error('Sync failed:', err)
+        } finally {
+          setSyncing(false)
+        }
+      }
+      doSync()
+    }
+  }, [isAuthenticated, loading])
 
   // Calculate stats for today
   const today = new Date().toDateString()
@@ -140,7 +164,7 @@ export default function SessionSummary() {
         </div>
 
         {/* SAVE PROMPT */}
-        {showSave && (
+        {!loading && !isAuthenticated && showSave && (
           <div className="save-prompt">
             <h3>💾 {t('summary.savePromptTitle') || 'Save Session History?'}</h3>
             <p>{t('summary.savePromptDesc') || 'Sign in or register for free to save session history, track long-term learning statistics, and get deeper personal insights.'}</p>

@@ -61,6 +61,10 @@ export default function Settings() {
     { id: 'divider' },
     { id: 'privacy', icon: '🔒', label: t('settings.privacyDataTitle') || 'Privacy & Data' },
     { id: 'danger', icon: '🗑️', label: t('settings.deleteAccount'), style: { color: '#e74c3c' } },
+    ...(isAuthenticated ? [
+      { id: 'divider-logout' },
+      { id: 'logout', icon: '🚪', label: t('nav.logout') || 'Logout', style: { color: '#e74c3c', fontWeight: 'bold' }, isAction: true }
+    ] : [])
   ]
 
   return (
@@ -71,11 +75,29 @@ export default function Settings() {
 
         <div className="settings-layout">
           <div className="settings-nav">
-            {navItems.map((item, i) => item.id === 'divider' ? (
-              <div key={i} className="snav-divider"></div>
-            ) : (
-              <button key={item.id} className={`snav-item ${sec === item.id ? 'active' : ''}`} onClick={() => setSec(item.id)} style={item.style}>{item.icon} {item.label}</button>
-            ))}
+            {navItems.map((item, i) => {
+              if (item.id.startsWith('divider')) {
+                return <div key={i} className="snav-divider"></div>
+              }
+              return (
+                <button
+                  key={item.id}
+                  className={`snav-item ${sec === item.id ? 'active' : ''}`}
+                  onClick={() => {
+                    if (item.isAction) {
+                      if (item.id === 'logout') {
+                        logout()
+                      }
+                    } else {
+                      setSec(item.id)
+                    }
+                  }}
+                  style={item.style}
+                >
+                  {item.icon} {item.label}
+                </button>
+              )
+            })}
           </div>
 
           <div className="settings-content">

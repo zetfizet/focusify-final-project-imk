@@ -31,7 +31,7 @@ function getDateLabel(isoStr) {
 export default function Dashboard() {
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
 
   useEffect(() => {
     const onFocus = () => setSessions(getStoredSessions())
@@ -183,7 +183,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {!isAuthenticated && (
+        {!loading && !isAuthenticated && (
           <div className="login-hint">🔒 {t('dashboard.saveProgressDesc')} <Link to="/auth">{t('dashboard.signInLink')}</Link></div>
         )}
       </main>
