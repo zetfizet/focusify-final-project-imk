@@ -16,12 +16,18 @@ export default function Settings() {
   })
   const [toastMsg, setToastMsg] = useState('')
   const [showToast, setShowToast] = useState(false)
+  const [modal, setModal] = useState({ show: false, title: '', message: '', onConfirm: null, isConfirm: false })
 
   const showNotification = (msg) => {
     setToastMsg(msg)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 3000)
   }
+
+  const showConfirm = (title, message, onConfirm) => {
+    setModal({ show: true, title, message, onConfirm, isConfirm: true })
+  }
+
   const [localLanguage, setLocalLanguage] = useState(language)
   const [localDarkMode, setLocalDarkMode] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
   const [localAnimations, setLocalAnimations] = useState(true)
@@ -37,12 +43,16 @@ export default function Settings() {
 
   function confirmDanger(type) {
     const msgs = { reset: 'Reset all progress? This cannot be undone.', delete: 'Delete account permanently? All data will be lost forever.' }
-    if (confirm(msgs[type])) {
-      showNotification(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
-      if (type === 'delete') {
-        logout()
+    showConfirm(
+      type === 'reset' ? '⚠️ Reset Progress' : '⚠️ Delete Account',
+      msgs[type],
+      () => {
+        showNotification(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
+        if (type === 'delete') {
+          logout()
+        }
       }
-    }
+    )
   }
 
   const handleSaveProfile = () => {
@@ -118,7 +128,7 @@ export default function Settings() {
                 ) : (
                   <>
                     <div style={{ padding: '12px', background: '#efe', border: '1px solid #cfc', borderRadius: 6, marginBottom: 16, color: '#373', fontSize: '14px' }}>{t('settings.loggedInAs')}<strong>{user?.email}</strong></div>
-                    <div className="avatar-row"><div className="avatar">👤</div><div className="avatar-info"><h3>{user?.username || 'User'}</h3><p>{t('settings.activeLoggedIn')}</p><button className="btn-change-ava" onClick={() => alert('Profile picture upload coming soon!')}>{t('settings.changePhoto')}</button></div></div>
+                    <div className="avatar-row"><div className="avatar">👤</div><div className="avatar-info"><h3>{user?.username || 'User'}</h3><p>{t('settings.activeLoggedIn')}</p><button className="btn-change-ava" onClick={() => showNotification('💡 Profile picture upload coming soon!')}>{t('settings.changePhoto')}</button></div></div>
                     <div className="frow"><div className="fgroup"><label>{t('settings.firstName')}</label><input type="text" placeholder={t('settings.firstName')} value={profileData.firstName} onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} /></div><div className="fgroup"><label>{t('settings.lastName')}</label><input type="text" placeholder={t('settings.lastName')} value={profileData.lastName} onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} /></div></div>
                     <div className="fgroup"><label>{t('settings.email')}</label><input type="email" placeholder={t('settings.email')} value={profileData.email} disabled style={{ opacity: .6 }} /></div>
                     <div className="fgroup"><label>{t('settings.university')}</label><input type="text" placeholder={t('settings.university')} /></div>
@@ -216,6 +226,31 @@ export default function Settings() {
           <div className="toast-msg">{toastMsg}</div>
         </div>
       </div>
+
+      {modal.show && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-card">
+            <h3>{modal.title}</h3>
+            <p>{modal.message}</p>
+            <div className="custom-modal-actions">
+              {modal.isConfirm && (
+                <button className="btn-modal-cancel" onClick={() => setModal({ ...modal, show: false })}>
+                  {t('common.cancel') || 'Cancel'}
+                </button>
+              )}
+              <button 
+                className="btn-modal-confirm" 
+                onClick={() => {
+                  if (modal.onConfirm) modal.onConfirm();
+                  setModal({ ...modal, show: false });
+                }}
+              >
+                {modal.isConfirm ? (t('common.confirm') || 'Confirm') : 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

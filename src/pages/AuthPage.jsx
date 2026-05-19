@@ -17,6 +17,7 @@ const AuthPage = () => {
     confirmPassword: ''
   })
   const [formError, setFormError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -25,6 +26,7 @@ const AuthPage = () => {
       [name]: value
     }))
     setFormError('')
+    setSuccessMessage('')
   }
 
   const validateForm = () => {
@@ -77,7 +79,7 @@ const AuthPage = () => {
       if (isLogin) {
         navigate('/')
       } else {
-        alert(t('auth.registerSuccess') || 'Registration successful! Please log in.')
+        setSuccessMessage(t('auth.registerSuccess') || 'Registration successful! Please log in.')
         setIsLogin(true)
         setFormData({
           email: formData.email,
@@ -94,6 +96,7 @@ const AuthPage = () => {
   const toggleMode = () => {
     setIsLogin(!isLogin)
     setFormError('')
+    setSuccessMessage('')
     setFormData({
       email: '',
       username: '',
@@ -116,6 +119,13 @@ const AuthPage = () => {
           {(formError || error) && (
             <div className="error-message">
               {formError || error}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="success-message">
+              {successMessage}
             </div>
           )}
 
