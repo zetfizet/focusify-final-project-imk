@@ -13,10 +13,14 @@ export const setMongoConnected = (status) => {
 // Database abstraction layer
 export const db = {
   // User operations
-  async findUserByEmail(email) {
+  async findUserByEmail(email, includePassword = false) {
     try {
       if (mongoConnected) {
-        return await User.findOne({ email })
+        let query = User.findOne({ email })
+        if (includePassword) {
+          query = query.select('+password')
+        }
+        return await query
       }
     } catch (err) {
       mongoConnected = false

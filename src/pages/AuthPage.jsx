@@ -74,7 +74,18 @@ const AuthPage = () => {
     }
 
     if (result.success) {
-      navigate('/')
+      if (isLogin) {
+        navigate('/')
+      } else {
+        alert(t('auth.registerSuccess') || 'Registration successful! Please log in.')
+        setIsLogin(true)
+        setFormData({
+          email: formData.email,
+          username: '',
+          password: '',
+          confirmPassword: ''
+        })
+      }
     } else {
       setFormError(result.error)
     }

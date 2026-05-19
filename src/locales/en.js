@@ -73,7 +73,8 @@ export default {
     dontHaveAccount: "Don't have an account? ",
     alreadyHaveAccount: 'Already have an account? ',
     guestMode: '💡 Or continue as guest and use localStorage only',
-    continueGuest: 'Continue as Guest'
+    continueGuest: 'Continue as Guest',
+    registerSuccess: '✨ Registration successful! Please sign in with your account.'
   },
   setup: {
     title: 'Configure Study Session',

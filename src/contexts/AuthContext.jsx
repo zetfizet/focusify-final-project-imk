@@ -48,20 +48,8 @@ export const AuthProvider = ({ children }) => {
     setLoading(true)
     setError(null)
     try {
-      const response = await authAPI.register(email, username, password)
-      const { token, refreshToken, user: userData } = response.data
-
-      localStorage.setItem('focusify_access_token', token)
-      localStorage.setItem('focusify_refresh_token', refreshToken)
-      localStorage.setItem('focusify_user', JSON.stringify(userData))
-
-      setUser(userData)
-      setIsAuthenticated(true)
-      
-      // Perform data sync after registration
-      await performFullDataSync()
-      
-      return { success: true, user: userData }
+      await authAPI.register(email, username, password)
+      return { success: true }
     } catch (err) {
       const message = err.response?.data?.error || err.response?.data?.message || 'Registration failed'
       setError(message)

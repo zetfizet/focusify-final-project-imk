@@ -73,7 +73,8 @@ export default {
     dontHaveAccount: 'Belum punya akun? ',
     alreadyHaveAccount: 'Sudah punya akun? ',
     guestMode: '💡 Atau lanjutkan sebagai tamu (hanya localStorage)',
-    continueGuest: 'Lanjut sebagai Tamu'
+    continueGuest: 'Lanjut sebagai Tamu',
+    registerSuccess: '✨ Pendaftaran berhasil! Silakan masuk menggunakan akun baru Anda.'
   },
   setup: {
     title: 'Konfigurasi Sesi Belajar',
