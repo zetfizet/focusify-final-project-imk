@@ -1,11 +1,8 @@
-import { Session } from '../models/Session.js'
+import { db } from '../utils/dbFacade.js'
 
 export const getAllSessions = async (req, res) => {
   try {
-    const sessions = await Session.find({ user_id: req.userId })
-      .sort({ created_at: -1 })
-      .exec()
-
+    const sessions = await db.findSessionsByUserId(req.userId)
     res.json(sessions)
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -16,10 +13,7 @@ export const getSessionById = async (req, res) => {
   try {
     const { id } = req.params
 
-    const session = await Session.findOne({
-      _id: id,
-      user_id: req.userId
-    })
+    const session = await db.findSessionByIdAndUserId(id, req.userId)
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' })
@@ -40,7 +34,7 @@ export const createSession = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' })
     }
 
-    const session = new Session({
+    const sessionData = {
       user_id: req.userId,
       name,
       duration,
@@ -54,13 +48,13 @@ export const createSession = async (req, res) => {
       distractions: distractions || 0,
       status: status || 'done',
       score: score || 100
-    })
+    }
 
-    await session.save()
+    const session = await db.createSession(sessionData)
 
     res.status(201).json({
       success: true,
-      session: session
+      session
     })
   } catch (error) {
     res.status(400).json({ error: error.message })
@@ -73,28 +67,17 @@ export const updateSession = async (req, res) => {
     const updates = req.body
 
     // Find and verify ownership
-    const session = await Session.findOne({
-      _id: id,
-      user_id: req.userId
-    })
+    const session = await db.findSessionByIdAndUserId(id, req.userId)
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' })
     }
 
-    // Update fields
-    Object.keys(updates).forEach(key => {
-      if (key in session) {
-        session[key] = updates[key]
-      }
-    })
-
-    session.updated_at = new Date()
-    await session.save()
+    const updatedSession = await db.updateSession(id, updates)
 
     res.json({
       success: true,
-      session: session
+      session: updatedSession
     })
   } catch (error) {
     res.status(400).json({ error: error.message })
@@ -105,12 +88,9 @@ export const deleteSession = async (req, res) => {
   try {
     const { id } = req.params
 
-    const session = await Session.findOneAndDelete({
-      _id: id,
-      user_id: req.userId
-    })
+    const deleted = await db.deleteSession(id)
 
-    if (!session) {
+    if (!deleted) {
       return res.status(404).json({ error: 'Session not found' })
     }
 
@@ -126,33 +106,31 @@ export const deleteSession = async (req, res) => {
 export const getSessionStats = async (req, res) => {
   try {
     const { period = 'week' } = req.query // 'day', 'week', 'month', 'all'
-
-    let dateFilter = {}
+    const sessions = await db.findSessionsByUserId(req.userId)
     const now = new Date()
 
-    if (period === 'day') {
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      dateFilter = { created_at: { $gte: startOfDay } }
-    } else if (period === 'week') {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      dateFilter = { created_at: { $gte: weekAgo } }
-    } else if (period === 'month') {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      dateFilter = { created_at: { $gte: monthAgo } }
-    }
-
-    const sessions = await Session.find({
-      user_id: req.userId,
-      ...dateFilter
+    const filtered = sessions.filter(s => {
+      const createdAt = new Date(s.created_at || s.endTime)
+      if (period === 'day') {
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        return createdAt >= startOfDay
+      } else if (period === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        return createdAt >= weekAgo
+      } else if (period === 'month') {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        return createdAt >= monthAgo
+      }
+      return true
     })
 
-    const totalSessions = sessions.length
-    const totalDuration = sessions.reduce((acc, s) => acc + s.duration, 0)
-    const avgScore = sessions.length > 0 
-      ? Math.round(sessions.reduce((acc, s) => acc + s.score, 0) / sessions.length)
+    const totalSessions = filtered.length
+    const totalDuration = filtered.reduce((acc, s) => acc + s.duration, 0)
+    const avgScore = filtered.length > 0 
+      ? Math.round(filtered.reduce((acc, s) => acc + s.score, 0) / filtered.length)
       : 0
-    const completedSessions = sessions.filter(s => s.status === 'done').length
-    const totalDistractions = sessions.reduce((acc, s) => acc + s.distractions, 0)
+    const completedSessions = filtered.filter(s => s.status === 'done').length
+    const totalDistractions = filtered.reduce((acc, s) => acc + s.distractions, 0)
 
     res.json({
       period,
@@ -161,7 +139,7 @@ export const getSessionStats = async (req, res) => {
       totalDuration,
       avgScore,
       totalDistractions,
-      sessions
+      sessions: filtered
     })
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -181,7 +159,7 @@ export const bulkCreateSessions = async (req, res) => {
       user_id: req.userId
     }))
 
-    const created = await Session.insertMany(sessionsToCreate)
+    const created = await db.bulkCreateSessions(sessionsToCreate)
 
     res.status(201).json({
       success: true,

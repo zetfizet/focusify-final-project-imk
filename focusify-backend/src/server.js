@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js'
 import sessionRoutes from './routes/sessions.js'
 import userRoutes from './routes/user.js'
 import { errorHandler } from './middleware/errorHandler.js'
+import { startWeeklyScheduler } from './services/emailService.js'
 
 // Get directory path for ES modules
 const __filename = fileURLToPath(import.meta.url)
@@ -36,6 +37,17 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }))
+
+// Request/Response logging middleware
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url} - body:`, req.body)
+  const originalJson = res.json
+  res.json = function (data) {
+    console.log(`[RESPONSE] ${req.method} ${req.url} - status: ${res.statusCode} - body:`, data)
+    return originalJson.call(this, data)
+  }
+  next()
+})
 
 // Routes
 app.use('/api/auth', authRoutes)
@@ -67,6 +79,7 @@ if (process.env.VERCEL !== '1') {
     console.log(`\n✅ Focusify Backend running on http://localhost:${PORT}`)
     console.log(`📍 Frontend: ${process.env.FRONTEND_URL}`)
     console.log(`🔒 Environment: ${process.env.NODE_ENV}\n`)
+    startWeeklyScheduler()
   })
 }
 

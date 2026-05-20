@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -6,19 +6,86 @@ import { useLanguage } from '../contexts/LanguageContext'
 export default function SessionSetup() {
   const navigate = useNavigate()
   const { t } = useLanguage()
-  const [sessionName, setSessionName] = useState('')
+  
+  const [sessionName, setSessionName] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.sessionName || ''
+    } catch(e) { return '' }
+  })
   const [error, setError] = useState(false)
   const [toast, setToast] = useState({ show: false, message: '' })
   const nameInputRef = useRef(null)
-  const [mode, setMode] = useState('pomo')
-  const [dur, setDur] = useState(25)
-  const [activePomo, setActivePomo] = useState(0)
-  const [ambTxt, setAmbTxt] = useState(t('setup.forest') || '🌿 Forest')
-  const [activeAmb, setActiveAmb] = useState(1)
-  const [fmOn, setFmOn] = useState(true)
-  const [customVal, setCustomVal] = useState(30)
-  const [currentStep, setCurrentStep] = useState(0)
-  const [breakMin, setBreakMin] = useState(5)
+  const [mode, setMode] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.mode || 'pomo'
+    } catch(e) { return 'pomo' }
+  })
+  const [dur, setDur] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.dur !== undefined ? draft.dur : 25
+    } catch(e) { return 25 }
+  })
+  const [activePomo, setActivePomo] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.activePomo !== undefined ? draft.activePomo : 0
+    } catch(e) { return 0 }
+  })
+  const [ambTxt, setAmbTxt] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.ambTxt || '🌿 Forest'
+    } catch(e) { return '🌿 Forest' }
+  })
+  const [activeAmb, setActiveAmb] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.activeAmb !== undefined ? draft.activeAmb : 1
+    } catch(e) { return 1 }
+  })
+  const [fmOn, setFmOn] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.fmOn !== undefined ? draft.fmOn : true
+    } catch(e) { return true }
+  })
+  const [customVal, setCustomVal] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.customVal !== undefined ? draft.customVal : 30
+    } catch(e) { return 30 }
+  })
+  const [currentStep, setCurrentStep] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.currentStep !== undefined ? draft.currentStep : 0
+    } catch(e) { return 0 }
+  })
+  const [breakMin, setBreakMin] = useState(() => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
+      return draft.breakMin !== undefined ? draft.breakMin : 5
+    } catch(e) { return 5 }
+  })
+
+  useEffect(() => {
+    const draft = {
+      sessionName,
+      mode,
+      dur,
+      activePomo,
+      ambTxt,
+      activeAmb,
+      fmOn,
+      customVal,
+      currentStep,
+      breakMin
+    }
+    localStorage.setItem('focusify_setup_draft', JSON.stringify(draft))
+  }, [sessionName, mode, dur, activePomo, ambTxt, activeAmb, fmOn, customVal, currentStep, breakMin])
 
   const pomoPresets = [
     { min: 25, label: t('settings.standard') || 'Standard' },
@@ -186,6 +253,7 @@ export default function SessionSetup() {
             startTime: new Date().toISOString()
           }
           localStorage.setItem('focusify_active_session', JSON.stringify(config))
+          localStorage.removeItem('focusify_setup_draft')
           navigate('/active-session')
         }}>▶ {t('setup.startSessionBtn')}</button>
       </main>

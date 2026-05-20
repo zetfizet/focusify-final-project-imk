@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useAuth } from '../hooks/useAuth'
 
 const CIRC = 2 * Math.PI * 100
 
@@ -12,7 +13,7 @@ function getSessionConfig() {
   return { name: 'Unnamed Session', duration: 25, type: 'Pomodoro', ambience: '🌿 Forest', focusMode: true, startTime: new Date().toISOString() }
 }
 
-function saveCompletedSession(config, elapsed, total, distCnt, status) {
+function saveCompletedSession(config, elapsed, total, distCnt, status, isAuthenticated) {
   const now = new Date()
   const completed = {
     name: config.name,
@@ -28,21 +29,32 @@ function saveCompletedSession(config, elapsed, total, distCnt, status) {
     status: status, // 'done' or 'partial'
     score: Math.max(0, 100 - (distCnt * 5) - (status === 'partial' ? 15 : 0))
   }
-  // Save to localStorage
-  let sessions = []  
-  try { 
-    sessions = JSON.parse(localStorage.getItem('focusify_sessions') || '[]') } catch (e) {}
-  sessions.unshift(completed)
-  localStorage.setItem('focusify_sessions', JSON.stringify(sessions))
+  
   // Also save as last session for summary page
   localStorage.setItem('focusify_last_session', JSON.stringify(completed))
+
+  if (isAuthenticated) {
+    // Save to localStorage list for logged in users (will be synced)
+    let sessions = []  
+    try { 
+      sessions = JSON.parse(localStorage.getItem('focusify_sessions') || '[]') } catch (e) {}
+    sessions.unshift(completed)
+    localStorage.setItem('focusify_sessions', JSON.stringify(sessions))
+  }
 }
 
 export default function ActiveSession() {
   const navigate = useNavigate()
   const { t } = useLanguage()
-  const config = useRef(getSessionConfig()).current
+  const { isAuthenticated } = useAuth()
+   const [config] = useState(() => getSessionConfig())
   const TOTAL = config.duration * 60
+
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
 
   const getAmbienceVideoId = (amb) => {
     if (!amb) return null
@@ -57,6 +69,7 @@ export default function ActiveSession() {
   const videoId = getAmbienceVideoId(config.ambience)
 
   const [remaining, setRemaining] = useState(TOTAL)
+  const [focusMode, setFocusMode] = useState(config.focusMode)
   const [paused, setPaused] = useState(false) // Revert to autoplay immediately
   const [distCnt, setDistCnt] = useState(0)
   const [showFCP, setShowFCP] = useState(false)
@@ -67,6 +80,11 @@ export default function ActiveSession() {
   const pausedRef = useRef(false) // Align with initial state
   const distCntRef = useRef(0)
   const allowDistractionRef = useRef(false)
+
+  const [ambienceOn, setAmbienceOn] = useState(true)
+  const [volume, setVolume] = useState(50)
+  const playerRef = useRef(null)
+  const playerContainerRef = useRef(null)
 
   function toggleTheme() {
     const h = document.documentElement
@@ -85,6 +103,115 @@ export default function ActiveSession() {
     return () => clearTimeout(delayTimer)
   }, [])
 
+  // Load YouTube Iframe API and initialize player
+  useEffect(() => {
+    if (!videoId) return
+
+    // Create a temporary div for YouTube API to replace.
+    // This keeps the DOM modification contained so React 19 does not crash when nodes change.
+    const tempDiv = document.createElement('div')
+    if (playerContainerRef.current) {
+      playerContainerRef.current.appendChild(tempDiv)
+    }
+
+    if (!window.YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
+
+    let player
+    const initPlayer = () => {
+      try {
+        if (window.YT && window.YT.Player) {
+          player = new window.YT.Player(tempDiv, {
+            height: '0',
+            width: '0',
+            videoId: videoId,
+            playerVars: {
+              autoplay: 1,
+              loop: 1,
+              playlist: videoId,
+              controls: 0,
+              showinfo: 0,
+              rel: 0,
+              enablejsapi: 1
+            },
+            events: {
+              onReady: (event) => {
+                playerRef.current = event.target
+                try {
+                  event.target.setVolume(ambienceOn ? volume : 0)
+                  if (!pausedRef.current && !finished) {
+                    event.target.playVideo()
+                  } else {
+                    event.target.pauseVideo()
+                  }
+                } catch (readyErr) {
+                  console.warn("YouTube player onReady failed:", readyErr)
+                }
+              }
+            }
+          })
+        }
+      } catch (err) {
+        console.error("Failed to initialize YouTube Player:", err)
+      }
+    }
+
+    if (window.YT && window.YT.Player) {
+      initPlayer()
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer
+    }
+
+    return () => {
+      try {
+        if (player && typeof player.destroy === 'function') {
+          player.destroy()
+        }
+      } catch (err) {
+        console.warn("YouTube player destroy failed:", err)
+      }
+      if (playerContainerRef.current) {
+        playerContainerRef.current.innerHTML = ''
+      }
+    }
+  }, [videoId])
+
+  // Sync volume and mute state
+  useEffect(() => {
+    if (playerRef.current) {
+      try {
+        if (typeof playerRef.current.setVolume === 'function') {
+          playerRef.current.setVolume(ambienceOn ? volume : 0)
+        }
+      } catch (err) {
+        console.warn("YouTube player setVolume failed:", err)
+      }
+    }
+  }, [volume, ambienceOn])
+
+  // Sync play/pause state
+  useEffect(() => {
+    if (playerRef.current) {
+      try {
+        if (paused || finished) {
+          if (typeof playerRef.current.pauseVideo === 'function') {
+            playerRef.current.pauseVideo()
+          }
+        } else {
+          if (typeof playerRef.current.playVideo === 'function') {
+            playerRef.current.playVideo()
+          }
+        }
+      } catch (err) {
+        console.warn("YouTube player play/pause failed:", err)
+      }
+    }
+  }, [paused, finished])
+
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       if (!pausedRef.current) {
@@ -93,7 +220,7 @@ export default function ActiveSession() {
             clearInterval(intervalRef.current)
             setFinished(true)
             // Save as completed session
-            saveCompletedSession(config, TOTAL, TOTAL, distCntRef.current, 'done')
+            saveCompletedSession(config, TOTAL, TOTAL, distCntRef.current, 'done', isAuthenticated)
             setTimeout(() => navigate('/session-summary'), 1400)
             return 0
           }
@@ -101,28 +228,28 @@ export default function ActiveSession() {
         })
       }
     }, 1000)
-    // Demo distraction after 7s (only if focusMode is enabled)
+    // Demo distraction after 10m (600s) (only if focusMode is enabled)
     let demoTimeout
-    if (config.focusMode) {
+    if (focusMode) {
       demoTimeout = setTimeout(() => {
         if (allowDistractionRef.current) {
           distCntRef.current += 1
           setDistCnt(c => c + 1)
           setShowDistract(true)
         }
-      }, 7000)
+      }, 600000)
     }
 
     return () => { 
       clearInterval(intervalRef.current)
       if (demoTimeout) clearTimeout(demoTimeout)
     }
-  }, [navigate, config, TOTAL])
+  }, [navigate, config, TOTAL, isAuthenticated, focusMode])
 
   function handleStop() {
     clearInterval(intervalRef.current)
     const elapsed = TOTAL - remaining
-    saveCompletedSession(config, elapsed, TOTAL, distCntRef.current, elapsed >= TOTAL * 0.5 ? 'partial' : 'partial')
+    saveCompletedSession(config, elapsed, TOTAL, distCntRef.current, 'partial', isAuthenticated)
     navigate('/session-summary')
   }
 
@@ -130,22 +257,16 @@ export default function ActiveSession() {
     const next = !paused
     setPaused(next)
     pausedRef.current = next
-    if (next) setShowFCP(true)
-  }
-
-  function toggleFCPPanel() {
-    if (!paused) { 
-      setPaused(true)
-      pausedRef.current = true
+    if (next) {
       setShowFCP(true)
     } else {
-      setShowFCP(f => !f)
+      setShowFCP(false)
     }
   }
 
   // Focus lock - prevent tab switching and window switching
   useEffect(() => {
-    if (!config.focusMode) return
+    if (!focusMode) return
 
     // Prevent tab switching via visibilitychange
     const handleVisibilityChange = () => {
@@ -153,15 +274,13 @@ export default function ActiveSession() {
         distCntRef.current += 1
         setDistCnt(c => c + 1)
         setShowDistract(true)
-      }
-    }
 
-    // Prevent window blur (switching to another window)
-    const handleWindowBlur = () => {
-      if (!finished && allowDistractionRef.current) {
-        distCntRef.current += 1
-        setDistCnt(c => c + 1)
-        setShowDistract(true)
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(t('active.distractTitle') || 'Stay focused! 🎯', {
+            body: t('active.distractionDesc') || 'You left the learning tab. Your focus score may decrease.',
+            icon: '/favicon.ico'
+          })
+        }
       }
     }
 
@@ -193,7 +312,6 @@ export default function ActiveSession() {
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('blur', handleWindowBlur)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('beforeunload', handleBeforeUnload)
 
@@ -209,12 +327,11 @@ export default function ActiveSession() {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('blur', handleWindowBlur)
+      document.removeEventListener('contextmenu', handleContextMenu)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('beforeunload', handleBeforeUnload)
-      document.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [finished, config.focusMode])
+  }, [finished, focusMode])
 
 
 
@@ -257,14 +374,57 @@ export default function ActiveSession() {
           <div className="status-row">
             <div className={`sbadge ${paused ? 'paused' : 'running'}`}>{finished ? `✅ ${t('dashboard.completed')}` : paused ? `⏸ ${t('active.paused') || 'Paused'}` : `● ${t('active.running') || 'Running'}`}</div>
             <div className="info-pill">{config.ambience}</div>
-            <div className="info-pill">{config.focusMode ? `🛡️ ${t('active.fmOn') || 'Focus Mode ON'}` : `🛡️ ${t('active.fmOff') || 'Focus Mode OFF'}`}</div>
+            <div className="info-pill">{focusMode ? `🛡️ ${t('active.fmOn') || 'Focus Mode ON'}` : `🛡️ ${t('active.fmOff') || 'Focus Mode OFF'}`}</div>
           </div>
 
           <div className="controls">
             <button className="btn-icon stop" onClick={() => setShowStop(true)} title="Stop Session">⏹</button>
             <button className={`btn-main ${paused ? 'paused-state' : ''}`} onClick={togglePause} title="Pause / Resume">{paused ? '▶' : '⏸'}</button>
-            <button className="btn-icon btn-fcp" onClick={toggleFCPPanel} title="Focus Control Panel">🎛️</button>
           </div>
+
+          {/* Ambience Volume Slider */}
+          {videoId && (
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              marginTop: '20px', 
+              justifyContent: 'center',
+              padding: '8px 16px',
+              background: 'var(--bg2)',
+              borderRadius: '20px',
+              maxWidth: '220px',
+              margin: '20px auto 0 auto',
+              border: '1px solid var(--border)'
+            }}>
+              <span 
+                style={{ fontSize: '1.1rem', cursor: 'pointer', userSelect: 'none' }} 
+                onClick={() => setAmbienceOn(!ambienceOn)}
+                title={ambienceOn ? "Mute" : "Unmute"}
+              >
+                {ambienceOn ? '🔊' : '🔇'}
+              </span>
+              <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={volume} 
+                onChange={(e) => setVolume(Number(e.target.value))} 
+                style={{ 
+                  width: '100px', 
+                  height: '4px', 
+                  accentColor: 'var(--accent)', 
+                  cursor: 'pointer',
+                  background: 'var(--border)',
+                  border: 'none',
+                  outline: 'none'
+                }} 
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text2)', fontWeight: 'bold', minWidth: '32px', textAlign: 'right' }}>
+                {ambienceOn ? `${volume}%` : 'Off'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Progress bar */}
@@ -280,19 +440,6 @@ export default function ActiveSession() {
             <div className="sr-i"><div className="sl">{t('active.todaysSessions') || "Today's Sessions"}</div><div className="sv">{todaySessions}</div></div>
             <div className="sr-i"><div className="sl">{t('active.distractionsPrevented') || 'Distractions Prevented'}</div><div className="sv">{distCnt}</div></div>
           </div>
-        </div>
-
-        {/* Focus Control Panel */}
-        <div className={`card fcp ${showFCP ? 'show' : ''}`}>
-          <div className="ctitle">🎛️ {t('active.fcpTitle') || 'Focus Control Panel'}</div>
-          <p style={{ fontSize: '.8rem', color: 'var(--text2)', marginBottom: 12 }}>{t('active.fcpDesc') || 'Adjust settings while the session is paused.'}</p>
-          <div className="fcp-grid">
-            <div className="fcp-row"><div><div className="fcp-l">{t('setup.focusMode') || 'Focus Mode'}</div><div className="fcp-s">{t('active.fcpBlock') || 'Block distractions'}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="fcp-row"><div><div className="fcp-l">{t('setup.ambience') || 'Ambience'}</div><div className="fcp-s">{t('active.fcpBgSound') || 'Background sound'}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="fcp-row"><div><div className="fcp-l">{t('settings.notifications') || 'Notifications'}</div><div className="fcp-s">{t('active.fcpAllBlocked') || 'All blocked'}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="fcp-row"><div><div className="fcp-l">{t('active.fcpReminder') || 'Reminder'}</div><div className="fcp-s">{t('active.fcpBreakAlert') || 'Break alert'}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
-          </div>
-          <div className="fcp-note">💡 {t('active.fcpNote') || 'Session paused. Press ▶ to continue or ⏹ to stop the session.'}</div>
         </div>
       </main>
 
@@ -318,18 +465,90 @@ export default function ActiveSession() {
         </div>
       </div>
 
-      {/* HIDDEN AMBIENCE AUDIO PLAYER (YOUTUBE IFRAME) */}
-      {videoId && !paused && !finished && (
-        <iframe 
-          width="10" 
-          height="10" 
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0`} 
-          title="Ambience Audio"
-          frameBorder="0" 
-          allow="autoplay" 
-          style={{ position: 'fixed', top: '0px', left: '0px', width: '1px', height: '1px', opacity: 0.001, pointerEvents: 'none', zIndex: -9999 }}
-        ></iframe>
+      {/* Focus Control Panel Overlay Modal */}
+      {paused && showFCP && (
+        <div className="stop-overlay show" style={{ zIndex: 3000 }}>
+          <div className="stop-card" style={{ maxWidth: '450px', width: '90%', textAlign: 'left', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>🎛️ {t('active.fcpTitle') || 'Focus Control Panel'}</h3>
+              <button 
+                onClick={togglePause} 
+                style={{ 
+                  border: 'none', 
+                  background: 'var(--bg2)', 
+                  color: 'var(--text)', 
+                  cursor: 'pointer', 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1rem' 
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <p style={{ fontSize: '.8rem', color: 'var(--text2)', marginBottom: 20 }}>{t('active.fcpDesc') || 'Adjust settings while the session is paused.'}</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('setup.focusMode') || 'Focus Mode'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>{t('active.fcpBlock') || 'Block distractions'}</div>
+                </div>
+                <label className="tog">
+                  <input 
+                    type="checkbox" 
+                    checked={focusMode} 
+                    onChange={(e) => {
+                      const val = e.target.checked
+                      setFocusMode(val)
+                      config.focusMode = val
+                      try {
+                        localStorage.setItem('focusify_active_session', JSON.stringify(config))
+                      } catch (err) {
+                        console.error(err)
+                      }
+                    }} 
+                  />
+                  <span className="sldr"></span>
+                </label>
+              </div>
+
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('settings.notifications') || 'Notifications'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>{t('active.fcpAllBlocked') || 'All blocked'}</div>
+                </div>
+                <label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('active.fcpReminder') || 'Reminder'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>{t('active.fcpBreakAlert') || 'Break alert'}</div>
+                </div>
+                <label className="tog"><input type="checkbox" /><span className="sldr"></span></label>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px', padding: '10px', background: 'var(--bg2)', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text2)', borderLeft: '3px solid var(--accent)' }}>
+              💡 {t('active.fcpNote') || 'Session paused. Press ▶ to continue or ⏹ to stop the session.'}
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button className="btn-confirm-stop" style={{ background: 'var(--accent)', color: 'white', padding: '8px 20px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }} onClick={togglePause}>
+                ▶ Resume
+              </button>
+            </div>
+          </div>
+        </div>
       )}
+      <div ref={playerContainerRef} style={{ display: 'none' }}></div>
     </>
   )
 }

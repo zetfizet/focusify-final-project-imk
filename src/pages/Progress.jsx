@@ -90,9 +90,35 @@ export default function Progress() {
   const hash = location.hash.replace('#','')
   const [tab, setTab] = useState(['daily','weekly','stats','history'].includes(hash) ? hash : 'daily')
   const [histFilter, setHistFilter] = useState('all')
+  const [expandedIndex, setExpandedIndex] = useState(null)
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
   const { isAuthenticated, loading } = useAuth()
+
+  if (!loading && !isAuthenticated) {
+    return (
+      <>
+        <Navbar />
+        <main className="container narrow" style={{ textAlign: 'center', marginTop: '60px' }}>
+          <div className="card" style={{ padding: '40px 30px', boxShadow: 'var(--shadow-lg)' }}>
+            <span style={{ fontSize: '3rem', marginBottom: '20px', display: 'block' }}>🔒</span>
+            <h2 style={{ marginBottom: '12px' }}>{t('progress.lockedTitle') || 'Learning Progress Locked'}</h2>
+            <p style={{ color: 'var(--text2)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '24px', maxWidth: '380px', margin: '0 auto 24px auto' }}>
+              {t('progress.lockedDesc') || 'Progress analytics, study streaks, and complete history tracking are exclusive to authenticated users. Sign in or register to begin monitoring your personal progress!'}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+              <Link to="/auth" className="btn-hero" style={{ padding: '10px 30px', textDecoration: 'none', display: 'inline-block', fontWeight: 600 }}>
+                🔐 {t('progress.signInBtn') || 'Sign In / Register'}
+              </Link>
+              <Link to="/" style={{ color: 'var(--text3)', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 500 }}>
+                ← {t('progress.backToDashboard') || 'Back to Dashboard'}
+              </Link>
+            </div>
+          </div>
+        </main>
+      </>
+    )
+  }
 
   useEffect(() => {
     if (['daily','weekly','stats','history'].includes(hash)) setTab(hash)
@@ -114,7 +140,7 @@ export default function Progress() {
   const todaySessions = sessions.filter(s => new Date(s.endTime).toDateString() === today)
   const todayTotal = todaySessions.reduce((a, s) => a + s.duration, 0)
   const todayAvgScore = todaySessions.length ? Math.round(todaySessions.reduce((a, s) => a + s.score, 0) / todaySessions.length) : 0
-  const TARGET = 4
+  const TARGET = Number(localStorage.getItem('focusify_target_sessions') || 4)
 
   // Calculate this week's stats
   const now = new Date()
@@ -142,7 +168,8 @@ export default function Progress() {
     meta: `${s.duration}' · ${s.type} · ${s.ambience.split(' ')[0]} · ${s.timeLabel}`,
     score: s.score + '%',
     cls: getScoreClass(s.score),
-    type: `${s.status} ${s.type.toLowerCase()}`
+    type: `${s.status} ${s.type.toLowerCase()}`,
+    raw: s
   }))
 
   const allHistory = storedHistory
@@ -177,7 +204,7 @@ export default function Progress() {
         {tab === 'daily' && (
           <div className="g2" style={{ alignItems: 'start' }}>
             <div className="card">
-              <div className="ctitle">🎯 {t('progress.dailyTarget')}</div>
+              <div className="ctitle">🎯 {t('progress.dailyTarget').replace('{count}', TARGET)}</div>
               <div className="ring-row">
                 <svg width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" strokeWidth="8" /><circle cx="40" cy="40" r="32" fill="none" stroke="var(--accent)" strokeWidth="8" strokeDasharray="201" strokeDashoffset={dashOffset} strokeLinecap="round" transform="rotate(-90 40 40)" /><text x="40" y="45" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--accent)" fontFamily="DM Sans">{pct}%</text></svg>
                 <div className="ring-info"><h3>{todaySessions.length} / {TARGET}</h3><p>{t('progress.sessionsCompleted')}</p><small>{t('progress.targetPerDay').replace('{count}', TARGET)}</small></div>
@@ -283,9 +310,52 @@ export default function Progress() {
                   {t('progress.noHistory')} <Link to="/session-setup" style={{ color:'var(--accent)', textDecoration:'none', fontWeight:600 }}>{t('dashboard.startFirst')}</Link>
                 </div>
               )}
-              {filteredHist.map((h,i) => (
-                <div key={i} className="hi"><div className="hi-date">{h.date}</div><div className="hi-ic">{h.icon}</div><div className="hi-info"><div className="hi-name">{h.name}</div><div className="hi-meta">{h.meta}</div></div><div className={`hi-score ${h.cls}`}>{h.score}</div></div>
-              ))}
+              {filteredHist.map((h,i) => {
+                const isExpanded = expandedIndex === i
+                return (
+                  <div key={i} className="hi-wrap" style={{ borderBottom: '1px solid var(--border)', padding: '4px 0' }}>
+                    <div 
+                      className="hi" 
+                      onClick={() => setExpandedIndex(isExpanded ? null : i)}
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', width: '100%', padding: '12px 8px', borderRadius: 'var(--radius-sm)' }}
+                    >
+                      <div className="hi-date">{h.date}</div>
+                      <div className="hi-ic">{h.icon}</div>
+                      <div className="hi-info" style={{ flexGrow: 1 }}>
+                        <div className="hi-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {h.name}
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text3)' }}>{isExpanded ? '▲' : '▼'}</span>
+                        </div>
+                        <div className="hi-meta">{h.meta}</div>
+                      </div>
+                      <div className={`hi-score ${h.cls}`}>{h.score}</div>
+                    </div>
+                    
+                    {isExpanded && (
+                      <div className="hi-details" style={{ 
+                        margin: '4px 8px 12px 8px', 
+                        padding: '12px 16px', 
+                        background: 'var(--bg2)', 
+                        borderRadius: 'var(--radius-sm)', 
+                        fontSize: '0.78rem',
+                        color: 'var(--text2)',
+                        borderLeft: '3px solid var(--accent)'
+                      }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px 16px' }}>
+                          <div><strong>⏱️ Duration:</strong> {h.raw.duration}m / {h.raw.totalDuration}m</div>
+                          <div><strong>🎯 Focus Score:</strong> {h.raw.score}%</div>
+                          <div><strong>✏️ Type:</strong> {h.raw.type}</div>
+                          <div><strong>🌿 Ambience:</strong> {h.raw.ambience}</div>
+                          <div><strong>🛡️ Distractions prevented:</strong> {h.raw.distractions}x</div>
+                          <div><strong>🔒 Focus Mode:</strong> {h.raw.focusMode ? 'Active' : 'Inactive'}</div>
+                          <div><strong>🕐 Start:</strong> {h.raw.startTime ? new Date(h.raw.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
+                          <div><strong>⌛ End:</strong> {h.raw.endTime ? new Date(h.raw.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

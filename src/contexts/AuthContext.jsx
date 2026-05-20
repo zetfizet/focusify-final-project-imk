@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from 'react'
-import { authAPI } from '../services/api'
+import { authAPI, userAPI } from '../services/api'
 import { performFullDataSync } from '../services/migration'
 
 export const AuthContext = createContext()
@@ -28,6 +28,22 @@ export const AuthProvider = ({ children }) => {
         
         // Sync backend data to localStorage on startup
         await performFullDataSync()
+
+        // Fetch and sync settings
+        try {
+          const settingsRes = await userAPI.getSettings()
+          if (settingsRes.data) {
+            const settings = settingsRes.data
+            if (settings.daily_target) {
+              localStorage.setItem('focusify_target_sessions', settings.daily_target)
+            }
+            if (settings.weekly_hours_target) {
+              localStorage.setItem('focusify_target_hours', settings.weekly_hours_target)
+            }
+          }
+        } catch (settingsErr) {
+          console.warn('Failed to sync settings from backend:', settingsErr.message)
+        }
       } else {
         setIsAuthenticated(false)
         setUser(null)
@@ -48,8 +64,20 @@ export const AuthProvider = ({ children }) => {
     setLoading(true)
     setError(null)
     try {
-      await authAPI.register(email, username, password)
-      return { success: true }
+      const response = await authAPI.register(email, username, password)
+      const { token, refreshToken, user: userData } = response.data
+
+      localStorage.setItem('focusify_access_token', token)
+      localStorage.setItem('focusify_refresh_token', refreshToken)
+      localStorage.setItem('focusify_user', JSON.stringify(userData))
+
+      setUser(userData)
+      setIsAuthenticated(true)
+
+      // Perform data sync after registration
+      await performFullDataSync()
+
+      return { success: true, user: userData }
     } catch (err) {
       const message = err.response?.data?.error || err.response?.data?.message || 'Registration failed'
       setError(message)
@@ -75,6 +103,22 @@ export const AuthProvider = ({ children }) => {
       
       // Perform data sync after login
       await performFullDataSync()
+
+      // Fetch and sync settings
+      try {
+        const settingsRes = await userAPI.getSettings()
+        if (settingsRes.data) {
+          const settings = settingsRes.data
+          if (settings.daily_target) {
+            localStorage.setItem('focusify_target_sessions', settings.daily_target)
+          }
+          if (settings.weekly_hours_target) {
+            localStorage.setItem('focusify_target_hours', settings.weekly_hours_target)
+          }
+        }
+      } catch (settingsErr) {
+        console.warn('Failed to sync settings from backend:', settingsErr.message)
+      }
       
       return { success: true, user: userData }
     } catch (err) {
@@ -103,6 +147,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(false)
   }, [])
 
+  const updateUserState = useCallback((updatedUserData) => {
+    localStorage.setItem('focusify_user', JSON.stringify(updatedUserData))
+    setUser(updatedUserData)
+  }, [])
+
   const value = {
     user,
     loading,
@@ -110,7 +159,8 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     register,
     login,
-    logout
+    logout,
+    updateUserState
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

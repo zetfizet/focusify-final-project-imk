@@ -57,6 +57,8 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body
 
+    console.log(`[LOGIN ATTEMPT] Email: ${email}`)
+
     // Validation
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' })
@@ -64,15 +66,19 @@ export const login = async (req, res) => {
 
     // Find user
     const user = await db.findUserByEmail(email, true)
+    console.log(`[LOGIN ATTEMPT] Found user in DB:`, user ? { id: user._id || user.id, email: user.email } : null)
 
     if (!user) {
+      console.log(`[LOGIN FAIL] User not found for email: ${email}`)
       return res.status(401).json({ error: 'Invalid email or password' })
     }
 
     // Compare passwords
     const isPasswordValid = await db.comparePassword(user.password, password)
+    console.log(`[LOGIN ATTEMPT] Password valid:`, isPasswordValid)
 
     if (!isPasswordValid) {
+      console.log(`[LOGIN FAIL] Invalid password for email: ${email}`)
       return res.status(401).json({ error: 'Invalid email or password' })
     }
 

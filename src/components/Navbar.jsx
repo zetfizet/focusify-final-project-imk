@@ -61,8 +61,8 @@ export default function Navbar({ showNavLinks = true, showLoginBtn = true, showL
         )}
         {isAuthenticated && (
           <div className="profile-dropdown-container" ref={dropdownRef}>
-            <button className="profile-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-              {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+            <button className="profile-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ fontSize: '1.25rem' }}>
+              {user?.avatar || (user?.username ? user.username.charAt(0).toUpperCase() : 'U')}
             </button>
             {isDropdownOpen && (
               <div className="profile-dropdown">

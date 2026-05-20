@@ -47,9 +47,8 @@ export default function Auth() {
     const result = await registerUser(regData.email, username, regData.password)
 
     if (result.success) {
-      alert('✨ Registration successful! You can now log in.')
-      setRegData({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' })
-      setTab('login') // Switch to login tab
+      alert('✨ Registration successful! Welcome to Focusify!')
+      navigate('/')
     } else {
       setRegError(result.error || 'Registration failed')
     }

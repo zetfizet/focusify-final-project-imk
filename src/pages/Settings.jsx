@@ -1,19 +1,126 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
+import { sessionsAPI, userAPI } from '../services/api'
 import Navbar from '../components/Navbar'
 
 export default function Settings() {
   const [sec, setSec] = useState('account')
   const [activeDef, setActiveDef] = useState(1)
-  const { isAuthenticated, user, logout } = useContext(AuthContext)
+  const { isAuthenticated, user, logout, updateUserState } = useContext(AuthContext)
   const { t, language, setLanguage } = useLanguage()
   const [profileData, setProfileData] = useState({
     firstName: user?.first_name || '',
     lastName: user?.last_name || '',
-    email: user?.email || ''
+    email: user?.email || '',
+    university: user?.university || '',
+    major: user?.major || ''
   })
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        email: user.email || '',
+        university: user.university || '',
+        major: user.major || ''
+      })
+    }
+  }, [user])
+
+  const [targetSessions, setTargetSessions] = useState(() => 
+    Number(localStorage.getItem('focusify_target_sessions') || 4)
+  )
+  const [targetHours, setTargetHours] = useState(() => 
+    Number(localStorage.getItem('focusify_target_hours') || 25)
+  )
+  const [dailyReminder, setDailyReminder] = useState(true)
+  const [breakReminder, setBreakReminder] = useState(true)
+  const [streakAchievement, setStreakAchievement] = useState(true)
+  const [weeklySummary, setWeeklySummary] = useState(false)
+  const [reminderTime, setReminderTime] = useState("19:30")
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        if (isAuthenticated) {
+          const res = await userAPI.getSettings()
+          if (res.data) {
+            const s = res.data
+            setDailyReminder(s.notifications_enabled !== undefined ? s.notifications_enabled : true)
+            setBreakReminder(s.break_reminder !== undefined ? s.break_reminder : true)
+            setStreakAchievement(s.streak_achievement_notifications !== undefined ? s.streak_achievement_notifications : true)
+            setWeeklySummary(s.weekly_summary_notifications !== undefined ? s.weekly_summary_notifications : false)
+            setReminderTime(s.reminder_time || "19:30")
+            
+            if (s.daily_target) setTargetSessions(s.daily_target)
+            if (s.weekly_hours_target) setTargetHours(s.weekly_hours_target)
+          }
+        } else {
+          setDailyReminder(localStorage.getItem('focusify_daily_reminder') !== 'false')
+          setBreakReminder(localStorage.getItem('focusify_break_reminder') !== 'false')
+          setStreakAchievement(localStorage.getItem('focusify_streak_achievement') !== 'false')
+          setWeeklySummary(localStorage.getItem('focusify_weekly_summary') === 'true')
+          setReminderTime(localStorage.getItem('focusify_reminder_time') || "19:30")
+        }
+      } catch (err) {
+        console.warn('Failed to load settings:', err)
+      }
+    }
+    loadSettings()
+  }, [isAuthenticated])
+
+  const handleDailyReminderChange = (checked) => {
+    setDailyReminder(checked)
+    if (checked && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            showNotification('🔔 ' + (t('settings.notifPermissionGranted') || 'Notification permission granted!'))
+          } else if (permission === 'denied') {
+            showNotification('⚠️ ' + (t('settings.notifPermissionDenied') || 'Notification permission denied. Please check browser settings.'))
+          }
+        })
+      } else if (Notification.permission === 'denied') {
+        showNotification('⚠️ ' + (t('settings.notifPermissionDenied') || 'Notification permission denied. Please check browser settings.'))
+      }
+    }
+  }
+
+  const handleSaveNotifications = async () => {
+    try {
+      if (dailyReminder && 'Notification' in window && Notification.permission !== 'granted') {
+        const permission = await Notification.requestPermission()
+        if (permission !== 'granted') {
+          showNotification('⚠️ ' + (t('settings.notifPermissionDenied') || 'Notifications are disabled in browser.'))
+        }
+      }
+
+      localStorage.setItem('focusify_daily_reminder', dailyReminder)
+      localStorage.setItem('focusify_break_reminder', breakReminder)
+      localStorage.setItem('focusify_streak_achievement', streakAchievement)
+      localStorage.setItem('focusify_weekly_summary', weeklySummary)
+      localStorage.setItem('focusify_reminder_time', reminderTime)
+
+      if (isAuthenticated) {
+        await userAPI.updateSettings({
+          notifications_enabled: dailyReminder,
+          break_reminder: breakReminder,
+          streak_achievement_notifications: streakAchievement,
+          weekly_summary_notifications: weeklySummary,
+          reminder_time: reminderTime
+        })
+      }
+      showNotification('✅ ' + (t('settings.saveNotificationsSuccess') || 'Notification settings saved!'))
+    } catch (e) {
+      console.error('Save notifications error:', e)
+      showNotification('❌ Error saving notifications settings.')
+    }
+  }
+
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
   const [showToast, setShowToast] = useState(false)
   const [modal, setModal] = useState({ show: false, title: '', message: '', onConfirm: null, isConfirm: false })
@@ -30,7 +137,7 @@ export default function Settings() {
 
   const [localLanguage, setLocalLanguage] = useState(language)
   const [localDarkMode, setLocalDarkMode] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
-  const [localAnimations, setLocalAnimations] = useState(true)
+  const [localAnimations, setLocalAnimations] = useState(() => localStorage.getItem('focusify_animations_enabled') !== 'false')
 
   const handleSaveAppearance = () => {
     setLanguage(localLanguage)
@@ -38,7 +145,66 @@ export default function Settings() {
     h.setAttribute('data-theme', localDarkMode ? 'dark' : 'light')
     const btn = document.getElementById('thbtn')
     if (btn) btn.textContent = localDarkMode ? '🌙' : '🌿'
+
+    localStorage.setItem('focusify_animations_enabled', localAnimations)
+    if (localAnimations) {
+      document.documentElement.classList.remove('no-animations')
+    } else {
+      document.documentElement.classList.add('no-animations')
+    }
+
     showNotification('✅ Appearance updated successfully!')
+  }
+
+  const handleResetProgress = async () => {
+    try {
+      if (isAuthenticated) {
+        const response = await sessionsAPI.getAll()
+        const backendSessions = response.data || []
+        for (const s of backendSessions) {
+          const id = s._id || s.id
+          if (id) {
+            await sessionsAPI.delete(id)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error deleting backend sessions:', e)
+    } finally {
+      localStorage.removeItem('focusify_sessions')
+      localStorage.removeItem('focusify_last_session')
+      localStorage.removeItem('focusify_setup_draft')
+      showNotification('✅ All progress has been reset.')
+    }
+  }
+
+  const handleDownloadData = () => {
+    try {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        user: isAuthenticated ? user : 'Guest Mode',
+        sessions: JSON.parse(localStorage.getItem('focusify_sessions') || '[]'),
+        lastSession: JSON.parse(localStorage.getItem('focusify_last_session') || 'null'),
+        setupDraft: JSON.parse(localStorage.getItem('focusify_setup_draft') || 'null'),
+        settings: {
+          language: localStorage.getItem('focusify_language') || 'en',
+          theme: document.documentElement.getAttribute('data-theme') || 'light'
+        }
+      }
+      const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+        JSON.stringify(data, null, 2)
+      )}`
+      const downloadAnchor = document.createElement('a')
+      downloadAnchor.setAttribute('href', jsonString)
+      downloadAnchor.setAttribute('download', `focusify_data_${new Date().toISOString().slice(0, 10)}.json`)
+      document.body.appendChild(downloadAnchor)
+      downloadAnchor.click()
+      downloadAnchor.remove()
+      showNotification('📥 Data downloaded successfully!')
+    } catch (e) {
+      console.error('Download data failed:', e)
+      showNotification('❌ Failed to export data.')
+    }
   }
 
   function confirmDanger(type) {
@@ -47,16 +213,77 @@ export default function Settings() {
       type === 'reset' ? '⚠️ Reset Progress' : '⚠️ Delete Account',
       msgs[type],
       () => {
-        showNotification(type === 'reset' ? 'Progress reset.' : 'Account deleted.')
-        if (type === 'delete') {
+        if (type === 'reset') {
+          handleResetProgress()
+        } else if (type === 'delete') {
+          showNotification('Account deleted.')
           logout()
         }
       }
     )
   }
 
-  const handleSaveProfile = () => {
-    showNotification('✅ Profile updated successfully!')
+  const handleSaveProfile = async () => {
+    try {
+      if (isAuthenticated) {
+        const response = await userAPI.updateProfile({
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          university: profileData.university,
+          major: profileData.major
+        })
+        if (response.data?.success) {
+          updateUserState(response.data.user)
+          showNotification('✅ Profile updated successfully!')
+        } else {
+          showNotification('❌ Failed to update profile.')
+        }
+      } else {
+        showNotification('❌ Please sign in to update profile.')
+      }
+    } catch (e) {
+      console.error('Update profile error:', e)
+      showNotification('❌ Error updating profile.')
+    }
+  }
+
+  const handleSelectAvatar = async (emoji) => {
+    try {
+      if (isAuthenticated) {
+        const response = await userAPI.updateProfile({ avatar: emoji })
+        if (response.data?.success) {
+          updateUserState(response.data.user)
+          showNotification('✅ Avatar updated successfully!')
+        } else {
+          showNotification('❌ Failed to update avatar.')
+        }
+      } else {
+        showNotification('❌ Please sign in to change avatar.')
+      }
+    } catch (e) {
+      console.error('Update avatar error:', e)
+      showNotification('❌ Error updating avatar.')
+    } finally {
+      setShowAvatarPicker(false)
+    }
+  }
+
+  const handleSaveTargets = async () => {
+    try {
+      localStorage.setItem('focusify_target_sessions', targetSessions)
+      localStorage.setItem('focusify_target_hours', targetHours)
+      
+      if (isAuthenticated) {
+        await userAPI.updateSettings({
+          daily_target: targetSessions,
+          weekly_hours_target: targetHours
+        })
+      }
+      showNotification('✅ Learning targets saved successfully!')
+    } catch (e) {
+      console.error('Save targets error:', e)
+      showNotification('❌ Error saving targets.')
+    }
   }
 
   const handleGenericSave = (msg) => {
@@ -128,11 +355,37 @@ export default function Settings() {
                 ) : (
                   <>
                     <div style={{ padding: '12px', background: '#efe', border: '1px solid #cfc', borderRadius: 6, marginBottom: 16, color: '#373', fontSize: '14px' }}>{t('settings.loggedInAs')}<strong>{user?.email}</strong></div>
-                    <div className="avatar-row"><div className="avatar">👤</div><div className="avatar-info"><h3>{user?.username || 'User'}</h3><p>{t('settings.activeLoggedIn')}</p><button className="btn-change-ava" onClick={() => showNotification('💡 Profile picture upload coming soon!')}>{t('settings.changePhoto')}</button></div></div>
-                    <div className="frow"><div className="fgroup"><label>{t('settings.firstName')}</label><input type="text" placeholder={t('settings.firstName')} value={profileData.firstName} onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} /></div><div className="fgroup"><label>{t('settings.lastName')}</label><input type="text" placeholder={t('settings.lastName')} value={profileData.lastName} onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} /></div></div>
+                    <div className="avatar-row">
+                      <div className="avatar">{user?.avatar || '👤'}</div>
+                      <div className="avatar-info">
+                        <h3>{user?.username || 'User'}</h3>
+                        <p>{t('settings.activeLoggedIn')}</p>
+                        <button className="btn-change-ava" onClick={() => setShowAvatarPicker(true)}>{t('settings.changePhoto')}</button>
+                      </div>
+                    </div>
+                    <div className="frow">
+                      <div className="fgroup"><label>{t('settings.firstName')}</label><input type="text" placeholder={t('settings.firstName')} value={profileData.firstName} onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} /></div>
+                      <div className="fgroup"><label>{t('settings.lastName')}</label><input type="text" placeholder={t('settings.lastName')} value={profileData.lastName} onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} /></div>
+                    </div>
                     <div className="fgroup"><label>{t('settings.email')}</label><input type="email" placeholder={t('settings.email')} value={profileData.email} disabled style={{ opacity: .6 }} /></div>
-                    <div className="fgroup"><label>{t('settings.university')}</label><input type="text" placeholder={t('settings.university')} /></div>
-                    <div className="fgroup"><label>{t('settings.major')}</label><input type="text" placeholder={t('settings.major')} /></div>
+                    <div className="fgroup">
+                      <label>{t('settings.university')}</label>
+                      <input 
+                        type="text" 
+                        placeholder={t('settings.university')} 
+                        value={profileData.university} 
+                        onChange={(e) => setProfileData({ ...profileData, university: e.target.value })} 
+                      />
+                    </div>
+                    <div className="fgroup">
+                      <label>{t('settings.major')}</label>
+                      <input 
+                        type="text" 
+                        placeholder={t('settings.major')} 
+                        value={profileData.major} 
+                        onChange={(e) => setProfileData({ ...profileData, major: e.target.value })} 
+                      />
+                    </div>
                     <button className="btn-save-set" onClick={handleSaveProfile}>{t('settings.saveChanges')}</button>
                     <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
                       <h4 style={{ marginBottom: 12 }}>{t('settings.dangerZone')}</h4>
@@ -162,8 +415,29 @@ export default function Settings() {
                 </div>
                 <div className="card">
                   <div className="ctitle">🎯 {t('settings.learningTarget')}</div>
-                  <div className="frow"><div className="fgroup"><label>{t('settings.targetSessions')}</label><input type="number" defaultValue="4" min="1" max="12" /></div><div className="fgroup"><label>{t('settings.targetHours')}</label><input type="number" defaultValue="25" min="1" max="100" /></div></div>
-                  <button className="btn-save-set" onClick={() => handleGenericSave(t('settings.saveTargets'))}>{t('settings.saveTargets')}</button>
+                  <div className="frow">
+                    <div className="fgroup">
+                      <label>{t('settings.targetSessions')}</label>
+                      <input 
+                        type="number" 
+                        value={targetSessions} 
+                        onChange={(e) => setTargetSessions(Number(e.target.value))} 
+                        min="1" 
+                        max="12" 
+                      />
+                    </div>
+                    <div className="fgroup">
+                      <label>{t('settings.targetHours')}</label>
+                      <input 
+                        type="number" 
+                        value={targetHours} 
+                        onChange={(e) => setTargetHours(Number(e.target.value))} 
+                        min="1" 
+                        max="100" 
+                      />
+                    </div>
+                  </div>
+                  <button className="btn-save-set" onClick={handleSaveTargets}>{t('settings.saveTargets')}</button>
                 </div>
               </>
             )}
@@ -172,12 +446,12 @@ export default function Settings() {
             {sec === 'notif' && (
               <div className="card">
                 <div className="ctitle">🔔 {t('settings.notificationSettings')}</div>
-                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dailyReminder')}</div><div className="ts">{t('settings.dailyReminderDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.breakReminder')}</div><div className="ts">{t('settings.breakReminderDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.streakAchievement')}</div><div className="ts">{t('settings.streakAchievementDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.weeklySummary')}</div><div className="ts">{t('settings.weeklySummaryDesc')}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
-                <div className="fgroup" style={{ marginTop: 16 }}><label>{t('settings.reminderTime')}</label><input type="time" defaultValue="19:30" /></div>
-                <button className="btn-save-set" onClick={() => handleGenericSave(t('settings.saveNotifications'))}>{t('settings.saveNotifications')}</button>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dailyReminder')}</div><div className="ts">{t('settings.dailyReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={dailyReminder} onChange={(e) => handleDailyReminderChange(e.target.checked)} /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.breakReminder')}</div><div className="ts">{t('settings.breakReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={breakReminder} onChange={(e) => setBreakReminder(e.target.checked)} /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.streakAchievement')}</div><div className="ts">{t('settings.streakAchievementDesc')}</div></div><label className="tog"><input type="checkbox" checked={streakAchievement} onChange={(e) => setStreakAchievement(e.target.checked)} /><span className="sldr"></span></label></div>
+                <div className="trow"><div className="tinfo"><div className="tl">{t('settings.weeklySummary')}</div><div className="ts">{t('settings.weeklySummaryDesc')}</div></div><label className="tog"><input type="checkbox" checked={weeklySummary} onChange={(e) => setWeeklySummary(e.target.checked)} /><span className="sldr"></span></label></div>
+                <div className="fgroup" style={{ marginTop: 16 }}><label>{t('settings.reminderTime')}</label><input type="time" value={reminderTime} onChange={(e) => setReminderTime(e.target.value)} /></div>
+                <button className="btn-save-set" onClick={handleSaveNotifications}>{t('settings.saveNotifications')}</button>
               </div>
             )}
 
@@ -204,7 +478,11 @@ export default function Settings() {
                 <div className="ctitle">🔒 {t('settings.privacyDataTitle')}</div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.usageAnalytics')}</div><div className="ts">{t('settings.usageAnalyticsDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dataSync')}</div><div className="ts">{t('settings.dataSyncDesc')}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
-                <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}><button className="btn-save-set">{t('settings.downloadData')}</button></div>
+                <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button className="btn-save-set" onClick={handleDownloadData}>
+                    {t('settings.downloadData') || 'Download My Data'}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -246,6 +524,47 @@ export default function Settings() {
                 }}
               >
                 {modal.isConfirm ? (t('common.confirm') || 'Confirm') : 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAvatarPicker && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-card" style={{ maxWidth: '400px', width: '90%' }}>
+            <h3>✨ Choose Avatar</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '16px' }}>Select an emoji avatar for your profile:</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', margin: '20px 0' }}>
+              {['👤', '🌿', '🦊', '🐱', '🦁', '🦉', '🎓', '💻', '🎯', '🚀', '☕', '🧠', '🌈', '🌸', '🍕'].map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleSelectAvatar(emoji)}
+                  style={{
+                    fontSize: '2rem',
+                    background: user?.avatar === emoji ? 'rgba(74, 117, 89, 0.15)' : 'transparent',
+                    border: user?.avatar === emoji ? '2px solid var(--accent)' : '1px solid var(--border)',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.15)';
+                    e.currentTarget.style.background = 'rgba(74, 117, 89, 0.1)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.background = user?.avatar === emoji ? 'rgba(74, 117, 89, 0.15)' : 'transparent';
+                  }}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+            <div className="custom-modal-actions" style={{ justifyContent: 'center' }}>
+              <button className="btn-modal-cancel" onClick={() => setShowAvatarPicker(false)} style={{ width: '100%' }}>
+                Cancel
               </button>
             </div>
           </div>

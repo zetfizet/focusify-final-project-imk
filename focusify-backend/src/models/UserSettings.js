@@ -30,11 +30,29 @@ const userSettingsSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+    streak_achievement_notifications: {
+      type: Boolean,
+      default: true
+    },
+    weekly_summary_notifications: {
+      type: Boolean,
+      default: false
+    },
+    reminder_time: {
+      type: String,
+      default: '19:30'
+    },
     daily_target: {
       type: Number,
       default: 4,
       min: 1,
       max: 24
+    },
+    weekly_hours_target: {
+      type: Number,
+      default: 25,
+      min: 1,
+      max: 168
     },
     language: {
       type: String,

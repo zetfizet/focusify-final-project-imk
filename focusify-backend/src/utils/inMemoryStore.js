@@ -43,6 +43,10 @@ export const inMemoryStore = {
     return user
   },
 
+  findAllUsers: () => {
+    return store.users
+  },
+
   // Session operations
   findSessionById: (id) => {
     return store.sessions.find(s => s._id === id)

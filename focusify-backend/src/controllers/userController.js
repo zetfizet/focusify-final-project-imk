@@ -1,34 +1,33 @@
-import { User } from '../models/User.js'
-import { UserSettings } from '../models/UserSettings.js'
-import { Session } from '../models/Session.js'
+import { db } from '../utils/dbFacade.js'
 
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId)
+    const user = await db.findUserById(req.userId)
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    // Get user stats
-    const totalSessions = await Session.countDocuments({ user_id: req.userId })
-    const totalDuration = await Session.aggregate([
-      { $match: { user_id: user._id } },
-      { $group: { _id: null, total: { $sum: '$duration' } } }
-    ])
+    // Get user stats via facade
+    const totalSessions = await db.countSessionsByUserId(req.userId)
+    const totalDuration = await db.aggregateSessionDuration(req.userId)
 
     res.json({
-      id: user._id,
+      id: user._id || user.id,
       email: user.email,
       username: user.username,
       avatar: user.avatar,
       bio: user.bio,
-      plan: user.plan,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      university: user.university || '',
+      major: user.major || '',
+      plan: user.plan || 'Free',
       created_at: user.created_at,
       last_login: user.last_login,
       stats: {
         totalSessions,
-        totalDuration: totalDuration[0]?.total || 0
+        totalDuration
       }
     })
   } catch (error) {
@@ -38,30 +37,38 @@ export const getUserProfile = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
   try {
-    const { username, avatar, bio } = req.body
+    const { username, avatar, bio, firstName, lastName, university, major } = req.body
 
-    const user = await User.findById(req.userId)
+    const user = await db.findUserById(req.userId)
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    // Update allowed fields
-    if (username) user.username = username
-    if (avatar) user.avatar = avatar
-    if (bio !== undefined) user.bio = bio
+    // Prepare updates mapping to schema fields
+    const updates = {}
+    if (username) updates.username = username
+    if (avatar) updates.avatar = avatar
+    if (bio !== undefined) updates.bio = bio
+    if (firstName !== undefined) updates.first_name = firstName
+    if (lastName !== undefined) updates.last_name = lastName
+    if (university !== undefined) updates.university = university
+    if (major !== undefined) updates.major = major
 
-    user.updated_at = new Date()
-    await user.save()
+    const updatedUser = await db.updateUser(req.userId, updates)
 
     res.json({
       success: true,
       user: {
-        id: user._id,
-        email: user.email,
-        username: user.username,
-        avatar: user.avatar,
-        bio: user.bio
+        id: updatedUser._id || updatedUser.id,
+        email: updatedUser.email,
+        username: updatedUser.username,
+        avatar: updatedUser.avatar,
+        bio: updatedUser.bio,
+        first_name: updatedUser.first_name,
+        last_name: updatedUser.last_name,
+        university: updatedUser.university,
+        major: updatedUser.major
       }
     })
   } catch (error) {
@@ -71,7 +78,7 @@ export const updateUserProfile = async (req, res) => {
 
 export const getUserSettings = async (req, res) => {
   try {
-    const settings = await UserSettings.findOne({ user_id: req.userId })
+    const settings = await db.findSettingsByUserId(req.userId)
 
     if (!settings) {
       return res.status(404).json({ error: 'Settings not found' })
@@ -85,25 +92,22 @@ export const getUserSettings = async (req, res) => {
 
 export const updateUserSettings = async (req, res) => {
   try {
-    const { theme, notifications_enabled, sound_enabled, break_reminder, distraction_warning, daily_target, language } = req.body
+    const { theme, notifications_enabled, sound_enabled, break_reminder, distraction_warning, daily_target, weekly_hours_target, language, streak_achievement_notifications, weekly_summary_notifications, reminder_time } = req.body
 
-    let settings = await UserSettings.findOne({ user_id: req.userId })
+    const updates = {}
+    if (theme) updates.theme = theme
+    if (notifications_enabled !== undefined) updates.notifications_enabled = notifications_enabled
+    if (sound_enabled !== undefined) updates.sound_enabled = sound_enabled
+    if (break_reminder !== undefined) updates.break_reminder = break_reminder
+    if (distraction_warning !== undefined) updates.distraction_warning = distraction_warning
+    if (daily_target !== undefined) updates.daily_target = daily_target
+    if (weekly_hours_target !== undefined) updates.weekly_hours_target = weekly_hours_target
+    if (language) updates.language = language
+    if (streak_achievement_notifications !== undefined) updates.streak_achievement_notifications = streak_achievement_notifications
+    if (weekly_summary_notifications !== undefined) updates.weekly_summary_notifications = weekly_summary_notifications
+    if (reminder_time !== undefined) updates.reminder_time = reminder_time
 
-    if (!settings) {
-      settings = new UserSettings({ user_id: req.userId })
-    }
-
-    // Update allowed fields
-    if (theme) settings.theme = theme
-    if (notifications_enabled !== undefined) settings.notifications_enabled = notifications_enabled
-    if (sound_enabled !== undefined) settings.sound_enabled = sound_enabled
-    if (break_reminder !== undefined) settings.break_reminder = break_reminder
-    if (distraction_warning !== undefined) settings.distraction_warning = distraction_warning
-    if (daily_target) settings.daily_target = daily_target
-    if (language) settings.language = language
-
-    settings.updated_at = new Date()
-    await settings.save()
+    const settings = await db.updateSettingsByUserId(req.userId, updates)
 
     res.json({
       success: true,
@@ -122,22 +126,20 @@ export const deleteAccount = async (req, res) => {
       return res.status(400).json({ error: 'Password is required to delete account' })
     }
 
-    const user = await User.findById(req.userId).select('+password')
+    const user = await db.findUserById(req.userId)
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    const isPasswordValid = await user.comparePassword(password)
+    const isPasswordValid = await db.comparePassword(user.password, password)
 
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Password is incorrect' })
     }
 
-    // Delete all user data
-    await Session.deleteMany({ user_id: req.userId })
-    await UserSettings.deleteOne({ user_id: req.userId })
-    await User.findByIdAndDelete(req.userId)
+    // Delete user settings and sessions via facade
+    await db.deleteUserData(req.userId)
 
     res.json({
       success: true,

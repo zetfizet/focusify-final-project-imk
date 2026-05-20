@@ -24,14 +24,43 @@ function getDateLabel(isoStr) {
   if (d.toDateString() === today) return 'Today'
   if (d.toDateString() === yesterday) return 'Yesterday'
   const diff = Math.floor((now - d) / 86400000)
-  if (diff < 7) return `${diff} hours ago`
+  if (diff < 7) return `${diff} days ago`
   return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+}
+
+function calculateStreak(sessions) {
+  if (!sessions || sessions.length === 0) return 0
+  const uniqueDays = Array.from(
+    new Set(sessions.map(s => new Date(s.endTime).toDateString()))
+  ).map(d => new Date(d))
+  
+  uniqueDays.sort((a, b) => b - a)
+  
+  const today = new Date().toDateString()
+  const yesterday = new Date(Date.now() - 86400000).toDateString()
+  
+  const newestDateStr = uniqueDays[0].toDateString()
+  if (newestDateStr !== today && newestDateStr !== yesterday) {
+    return 0
+  }
+  
+  let streak = 1
+  for (let i = 0; i < uniqueDays.length - 1; i++) {
+    const diffTime = Math.abs(uniqueDays[i] - uniqueDays[i+1])
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    if (diffDays === 1) {
+      streak++
+    } else if (diffDays > 1) {
+      break
+    }
+  }
+  return streak
 }
 
 export default function Dashboard() {
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, user, loading } = useAuth()
 
   useEffect(() => {
     const onFocus = () => setSessions(getStoredSessions())
@@ -49,13 +78,35 @@ export default function Dashboard() {
   const todaySessions = sessions.filter(s => new Date(s.endTime).toDateString() === today)
   const todayTotal = todaySessions.reduce((a, s) => a + s.duration, 0)
   const todayAvgScore = todaySessions.length ? Math.round(todaySessions.reduce((a, s) => a + s.score, 0) / todaySessions.length) : 0
-  const DAILY_TARGET = 4
+  const DAILY_TARGET = Number(localStorage.getItem('focusify_target_sessions') || 4)
   const dailyProgressPct = Math.min(100, Math.round((todaySessions.length / DAILY_TARGET) * 100))
   const dailyDashOffset = 188 - (188 * dailyProgressPct / 100)
   
+  // Calculate day streak count
+  const streakCount = calculateStreak(sessions)
+
+  // Calculate week streak days
+  const todayDate = new Date()
+  const dayOfIndex = todayDate.getDay()
+  const mondayDiff = dayOfIndex === 0 ? -6 : 1 - dayOfIndex
+  const startOfWeek = new Date(todayDate.getTime())
+  startOfWeek.setDate(todayDate.getDate() + mondayDiff)
+  startOfWeek.setHours(0, 0, 0, 0)
+
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const activeDays = new Set(sessions.map(s => new Date(s.endTime).toDateString()))
+
+  const streakDays = weekDays.map((name, i) => {
+    const dayDate = new Date(startOfWeek.getTime())
+    dayDate.setDate(startOfWeek.getDate() + i)
+    const isOk = activeDays.has(dayDate.toDateString())
+    return { name, isOk }
+  })
+
   // Calculate this week's stats
   const now = new Date()
-  const weekStart = new Date(now.setDate(now.getDate() - now.getDay()))
+  const weekStart = new Date(now.getTime() - (now.getDay() * 86400000))
+  weekStart.setHours(0,0,0,0)
   const weekSessions = sessions.filter(s => new Date(s.endTime) >= weekStart)
   const weekTotal = (weekSessions.reduce((a, s) => a + s.duration, 0) / 60).toFixed(1)
   const weekAvgScore = weekSessions.length ? Math.round(weekSessions.reduce((a, s) => a + s.score, 0) / weekSessions.length) : 0
@@ -72,10 +123,15 @@ export default function Dashboard() {
     <>
       <Navbar />
       <main className="container wide">
+
+
         {/* HERO */}
         <div className="hero">
           <div className="hero-text">
-            <h1>{t('dashboard.welcome')}<br /><em>Focusify</em> 🌱</h1>
+            <h1>
+              {isAuthenticated && user ? `${t('dashboard.welcome') || 'Welcome back'}, ${user.username || user.email.split('@')[0]}!` : (t('dashboard.welcome') || 'Welcome') }
+              <br /><em>Focusify</em> 🌱
+            </h1>
             <p>{t('dashboard.subtitle')}</p>
             <div className="hero-cta">
               <Link to="/session-setup" className="btn-hero">▶ {t('dashboard.startFocus')}</Link>
@@ -85,7 +141,7 @@ export default function Dashboard() {
           <div className="hero-circles">
             <div className="h-circle"><span className="n">{todaySessions.length}</span><span className="l">{t('dashboard.todaySessions')}</span></div>
             <div className="h-circle"><span className="n">{(todayTotal / 60).toFixed(1)}h</span><span className="l">{t('dashboard.totalFocus')}</span></div>
-            <div className="h-circle"><span className="n">🔥5</span><span className="l">{t('dashboard.dayStreak')}</span></div>
+            <div className="h-circle"><span className="n">🔥{streakCount}</span><span className="l">{t('dashboard.dayStreak')}</span></div>
           </div>
         </div>
 
@@ -94,7 +150,7 @@ export default function Dashboard() {
           <div className="card kpi"><div className="kpi-n">{monthSessions.length || 0}</div><div className="kpi-l">{t('dashboard.monthSessions')}</div><div className="kpi-d">{t('dashboard.last30Days')}</div></div>
           <div className="card kpi"><div className="kpi-n">{weekTotal}h</div><div className="kpi-l">{t('dashboard.weekFocus')}</div><div className="kpi-d">{t('dashboard.thisWeek')}</div></div>
           <div className="card kpi"><div className="kpi-n">{weekAvgScore || 0}%</div><div className="kpi-l">{t('dashboard.avgScore')}</div><div className="kpi-d">{t('dashboard.weeklyAvg')}</div></div>
-          <div className="card kpi"><div className="kpi-n">🔥{todaySessions.length || 0}</div><div className="kpi-l">{t('dashboard.todaySessions')}</div><div className="kpi-d" style={{ color: 'var(--accent)' }}>{t('dashboard.target').replace('{count}', 4)}</div></div>
+          <div className="card kpi"><div className="kpi-n">🔥{streakCount}</div><div className="kpi-l">{t('dashboard.dayStreak')}</div><div className="kpi-d" style={{ color: 'var(--accent)' }}>{t('dashboard.currentStreak') || 'Current Streak'}</div></div>
         </div>
 
         {/* Progress + Streak */}
@@ -125,13 +181,12 @@ export default function Dashboard() {
             <div className="card">
               <div className="ctitle">🗓️ {t('dashboard.thisWeekStreak')}</div>
               <div className="streak-row">
-                <div className="sd ok"><div className="d"></div><span>Mon</span></div>
-                <div className="sd ok"><div className="d"></div><span>Tue</span></div>
-                <div className="sd ok"><div className="d"></div><span>Wed</span></div>
-                <div className="sd ok"><div className="d"></div><span>Thu</span></div>
-                <div className="sd ok"><div className="d"></div><span>Fri</span></div>
-                <div className="sd"><div className="d"></div><span>Sat</span></div>
-                <div className="sd"><div className="d"></div><span>Sun</span></div>
+                {streakDays.map((day, idx) => (
+                  <div key={idx} className={`sd ${day.isOk ? 'ok' : ''}`}>
+                    <div className="d"></div>
+                    <span>{day.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="card">

@@ -29,15 +29,16 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    const isAuthRequest = originalRequest?.url?.includes('/login') || originalRequest?.url?.includes('/register')
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       originalRequest._retry = true
 
       try {
         const refreshToken = localStorage.getItem('focusify_refresh_token')
         if (!refreshToken) {
           // No refresh token available, redirect to login
-          window.location.href = '/#/auth'
+          window.location.href = '/auth'
           return Promise.reject(error)
         }
 
@@ -56,7 +57,7 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('focusify_access_token')
         localStorage.removeItem('focusify_refresh_token')
         localStorage.removeItem('focusify_user')
-        window.location.href = '/#/auth'
+        window.location.href = '/auth'
         return Promise.reject(refreshError)
       }
     }
@@ -115,8 +116,8 @@ export const userAPI = {
   getProfile: () =>
     apiClient.get('/api/user/profile'),
 
-  updateProfile: (username, avatar, bio) =>
-    apiClient.put('/api/user/profile', { username, avatar, bio }),
+  updateProfile: (profileData) =>
+    apiClient.put('/api/user/profile', profileData),
 
   getSettings: () =>
     apiClient.get('/api/user/settings'),

@@ -35,6 +35,22 @@ const userSchema = new mongoose.Schema(
       default: '',
       maxlength: 500
     },
+    first_name: {
+      type: String,
+      default: ''
+    },
+    last_name: {
+      type: String,
+      default: ''
+    },
+    university: {
+      type: String,
+      default: ''
+    },
+    major: {
+      type: String,
+      default: ''
+    },
     plan: {
       type: String,
       enum: ['free', 'pro', 'premium'],

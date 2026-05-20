@@ -108,6 +108,11 @@ const AuthPage = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
+        {loading && (
+          <div className="loading-bar-container">
+            <div className="loading-bar-progress"></div>
+          </div>
+        )}
         <div className="auth-header">
           <h1>🎯 Focusify</h1>
           <h2>{isLogin ? t('auth.welcomeBack') : t('auth.getStarted')}</h2>
@@ -227,6 +232,7 @@ const AuthPage = () => {
             type="button"
             className="guest-button"
             onClick={() => navigate('/')}
+            disabled={loading}
           >
             {t('auth.continueGuest')}
           </button>

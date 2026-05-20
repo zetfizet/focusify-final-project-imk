@@ -54,7 +54,11 @@ export default {
     ambienceSoundDesc: 'Musik latar selama sesi',
     moreSettings: 'Pengaturan lainnya →',
     saveProgressDesc: 'Simpan progresmu! Masuk atau daftar untuk melacak sesi secara persisten di semua perangkat.',
-    signInLink: 'Masuk atau daftar'
+    signInLink: 'Masuk atau daftar',
+    guestMode: 'Mode Tamu Aktif',
+    guestWarning: 'Sesi fokus Anda hanya disimpan sementara. Masuk atau buat akun untuk menyimpan riwayat belajar Anda secara permanen.',
+    signInBtn: 'Masuk / Daftar',
+    currentStreak: 'Streak Saat Ini'
   },
   auth: {
     welcomeBack: 'Selamat Datang Kembali',
@@ -245,7 +249,7 @@ export default {
     fullCompletion: 'Selesai Penuh',
     partialCompletion: 'Selesai Sebagian',
     progressUpdate: 'Pembaruan Progres',
-    dailyTarget: 'Target Harian (4 sesi)',
+    dailyTarget: 'Target Harian ({count} sesi)',
     totalFocusWeek: 'Total Fokus Minggu Ini',
     hours: 'jam',
     totalSessionsMonth: 'Total Sesi Bulan Ini',
@@ -368,6 +372,9 @@ export default {
     weeklySummaryDesc: 'Email ringkasan progres setiap minggu',
     reminderTime: 'Waktu Pengingat Belajar',
     saveNotifications: 'Simpan Notifikasi',
+    saveNotificationsSuccess: 'Pengaturan notifikasi berhasil disimpan!',
+    notifPermissionGranted: 'Izin notifikasi diberikan! 🔔',
+    notifPermissionDenied: 'Izin notifikasi ditolak. Silakan aktifkan notifikasi di pengaturan browser Anda.',
     appearanceTheme: 'Tampilan & Tema',
     darkMode: 'Mode Gelap',
     darkModeDesc: 'Gunakan tema gelap untuk malam hari',

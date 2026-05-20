@@ -54,7 +54,11 @@ export default {
     ambienceSoundDesc: 'Background music during sessions',
     moreSettings: 'More settings →',
     saveProgressDesc: 'Save your progress! Sign in or register to enable persistent session tracking across all devices.',
-    signInLink: 'Sign in or register'
+    signInLink: 'Sign in or register',
+    guestMode: 'Guest Mode Active',
+    guestWarning: 'Your focus sessions are only saved temporarily. Sign in or create an account to save your learning history permanently.',
+    signInBtn: 'Sign In / Register',
+    currentStreak: 'Current Streak'
   },
   auth: {
     welcomeBack: 'Welcome Back',
@@ -245,7 +249,7 @@ export default {
     fullCompletion: 'Full Completion',
     partialCompletion: 'Partial Completion',
     progressUpdate: 'Progress Update',
-    dailyTarget: 'Daily Target (4 sessions)',
+    dailyTarget: 'Daily Target ({count} sessions)',
     totalFocusWeek: 'Total Focus This Week',
     hours: 'hours',
     totalSessionsMonth: 'Total Sessions This Month',
@@ -368,6 +372,9 @@ export default {
     weeklySummaryDesc: 'Email progress summary every week',
     reminderTime: 'Learning Reminder Time',
     saveNotifications: 'Save Notifications',
+    saveNotificationsSuccess: 'Notification settings saved successfully!',
+    notifPermissionGranted: 'Notification permission granted! 🔔',
+    notifPermissionDenied: 'Notification permission denied. Please allow notifications in your browser settings.',
     appearanceTheme: 'Appearance & Theme',
     darkMode: 'Dark Mode',
     darkModeDesc: 'Use dark theme for evening use',

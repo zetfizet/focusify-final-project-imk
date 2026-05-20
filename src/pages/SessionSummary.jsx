@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
 import { performFullDataSync } from '../services/migration'
 
 export default function SessionSummary() {
+  const navigate = useNavigate()
   const [showSave, setShowSave] = useState(true)
   const [lastSession, setLastSession] = useState(null)
   const [allSessions, setAllSessions] = useState([])
@@ -44,6 +45,8 @@ export default function SessionSummary() {
   }, [isAuthenticated, loading])
 
   // Calculate stats for today
+  const targetSessions = Number(localStorage.getItem('focusify_target_sessions') || 4)
+  const targetHours = Number(localStorage.getItem('focusify_target_hours') || 25)
   const today = new Date().toDateString()
   const todaySessions = allSessions.filter(s => new Date(s.endTime).toDateString() === today)
   const todayAvgScore = todaySessions.length ? Math.round(todaySessions.reduce((a, s) => a + s.score, 0) / todaySessions.length) : 0
@@ -143,8 +146,8 @@ export default function SessionSummary() {
         {/* PROGRESS UPDATE */}
         <div className="card">
           <div className="ctitle">📈 {t('summary.progressUpdate') || 'Progress Update'}</div>
-          <div className="pu-item"><div className="pu-labels"><span>{t('summary.dailyTarget') || 'Daily Target (4 sessions)'}</span><span>{todaySessions.length} / 4 {todaySessions.length >= 4 ? '✅' : ''}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (todaySessions.length / 4) * 100) + '%' }}></div></div></div>
-          <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalFocusWeek') || 'Total Focus This Week'}</span><span>{weekTotalHours} / 25 {t('summary.hours') || 'hours'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (parseFloat(weekTotalHours) / 25) * 100) + '%' }}></div></div></div>
+          <div className="pu-item"><div className="pu-labels"><span>{(t('summary.dailyTarget') || 'Daily Target ({count} sessions)').replace('{count}', targetSessions)}</span><span>{todaySessions.length} / {targetSessions} {todaySessions.length >= targetSessions ? '✅' : ''}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (todaySessions.length / targetSessions) * 100) + '%' }}></div></div></div>
+          <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalFocusWeek') || 'Total Focus This Week'}</span><span>{weekTotalHours} / {targetHours} {t('summary.hours') || 'hours'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (parseFloat(weekTotalHours) / targetHours) * 100) + '%' }}></div></div></div>
           <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalSessionsMonth') || 'Total Sessions This Month'}</span><span>{allSessions.length} / 60 {t('summary.sessions') || 'sessions'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (allSessions.length / 60) * 100) + '%' }}></div></div></div>
           <div className="pu-milestone">
             <span className="milestone">🔥 {todaySessions.length}-{t('summary.sessionDay') || 'Session Day!'}</span>
@@ -159,7 +162,7 @@ export default function SessionSummary() {
           <div className="ins-list">
             <div className="ins"><div className="ins-ic">🎯</div><div className="ins-t">{t('summary.insight1').replace('{score}', lastSession.score).replace('{desc}', lastSession.score >= 90 ? (t('summary.insightExcellent')||'excellent!') : lastSession.score >= 70 ? (t('summary.insightGood')||'good!') : (t('summary.insightImprove')||'keep improving!')).replace('{dist}', lastSession.distractions)}</div></div>
             <div className="ins"><div className="ins-ic">📈</div><div className="ins-t">{t('summary.insight2').replace('{min}', durationMins).replace('{avg}', weekAvgScore).replace('{count}', weekSessions.length)}</div></div>
-            <div className="ins"><div className="ins-ic">🌱</div><div className="ins-t">{t('summary.insight3').replace('{count}', todaySessions.length).replace('{target}', todaySessions.length >= 4 ? (t('summary.targetAchieved')||'Daily target achieved! 🎉') : (t('summary.targetMore')||`${4 - todaySessions.length} more to reach your daily goal.`))}</div></div>
+            <div className="ins"><div className="ins-ic">🌱</div><div className="ins-t">{t('summary.insight3').replace('{count}', todaySessions.length).replace('{target}', todaySessions.length >= targetSessions ? (t('summary.targetAchieved')||'Daily target achieved! 🎉') : (t('summary.targetMore')||`${targetSessions - todaySessions.length} more to reach your daily goal.`))}</div></div>
           </div>
         </div>
 
@@ -168,7 +171,7 @@ export default function SessionSummary() {
           <div className="save-prompt">
             <h3>💾 {t('summary.savePromptTitle') || 'Save Session History?'}</h3>
             <p>{t('summary.savePromptDesc') || 'Sign in or register for free to save session history, track long-term learning statistics, and get deeper personal insights.'}</p>
-            <button className="btn-save" onClick={() => window.location.href = '#/auth'}>🔐 {t('summary.saveBtn') || 'Sign In / Register to Save'}</button>
+            <button className="btn-save" onClick={() => navigate('/auth')}>🔐 {t('summary.saveBtn') || 'Sign In / Register to Save'}</button>
             <a className="skip-link" onClick={() => setShowSave(false)}>{t('summary.skipBtn') || 'Skip, continue without saving'}</a>
           </div>
         )}
