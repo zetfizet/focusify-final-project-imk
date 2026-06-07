@@ -262,6 +262,10 @@ export default {
   progress: {
     title: 'Learning Progress',
     subtitle: 'Monitor your progress — daily, weekly, statistics, and session history.',
+    lockedTitle: 'Learning Progress Locked',
+    lockedDesc: 'Progress analytics, study streaks, and complete history tracking are exclusive to authenticated users. Sign in or register to begin monitoring your personal progress!',
+    signInBtn: 'Sign In / Register',
+    backToDashboard: 'Back to Dashboard',
     dailyProgress: 'Daily Progress',
     weeklySummary: 'Weekly Summary',
     studyStats: 'Study Statistics',

@@ -262,6 +262,10 @@ export default {
   progress: {
     title: 'Progres Belajar',
     subtitle: 'Pantau progresmu — harian, mingguan, statistik, dan riwayat sesi.',
+    lockedTitle: 'Progres Belajar Terkunci',
+    lockedDesc: 'Analisis progres, rentetan belajar, dan pelacakan riwayat lengkap eksklusif untuk pengguna yang sudah masuk. Masuk atau daftar untuk mulai memantau progres personalmu!',
+    signInBtn: 'Masuk / Daftar',
+    backToDashboard: 'Kembali ke Dasbor',
     dailyProgress: 'Progres Harian',
     weeklySummary: 'Ringkasan Mingguan',
     studyStats: 'Statistik Belajar',
