@@ -331,9 +331,9 @@ main.container.mini { max-width: 680px; }
   .btn-hero{padding:10px 18px;font-size:.8rem}
   .btn-hero-ghost{padding:10px 16px;font-size:.8rem}
   .hero-circles{flex-wrap:wrap;justify-content:center;gap:12px;width:100%}
-  .h-circle{width:60px;height:60px}
-  .h-circle .n{font-size:1.2rem}
-  .h-circle .l{font-size:.56rem}
+  .h-circle{width:75px;height:75px}
+  .h-circle .n{font-size:1.3rem}
+  .h-circle .l{font-size:.6rem}
   
   .g2,.g3,.g4{grid-template-columns:1fr;gap:10px;margin-bottom:12px}
   
@@ -402,9 +402,9 @@ main.container.mini { max-width: 680px; }
   .hero-cta{margin-top:10px;gap:6px}
   .btn-hero,.btn-hero-ghost{padding:8px 14px;font-size:.75rem}
   .hero-circles{gap:8px;width:100%}
-  .h-circle{width:50px;height:50px;font-size:.85rem}
-  .h-circle .n{font-size:1rem}
-  .h-circle .l{font-size:.5rem}
+  .h-circle{width:70px;height:70px;font-size:.85rem}
+  .h-circle .n{font-size:1.2rem}
+  .h-circle .l{font-size:.55rem}
   
   .g2,.g3,.g4{grid-template-columns:1fr;gap:8px;margin-bottom:10px}
   
