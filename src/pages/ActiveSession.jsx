@@ -13,6 +13,8 @@ function getSessionConfig() {
   return { name: 'Unnamed Session', duration: 25, type: 'Pomodoro', ambience: '🌿 Forest', focusMode: true, startTime: new Date().toISOString() }
 }
 
+import { sessionsAPI } from '../services/api'
+
 function saveCompletedSession(config, elapsed, total, distCnt, status, isAuthenticated) {
   const now = new Date()
   const completed = {
@@ -40,6 +42,11 @@ function saveCompletedSession(config, elapsed, total, distCnt, status, isAuthent
       sessions = JSON.parse(localStorage.getItem('focusify_sessions') || '[]') } catch (e) {}
     sessions.unshift(completed)
     localStorage.setItem('focusify_sessions', JSON.stringify(sessions))
+
+    // Save directly to backend
+    try {
+      sessionsAPI.create(completed).catch(e => console.error('Failed to save to backend:', e))
+    } catch (e) {}
   }
 }
 
