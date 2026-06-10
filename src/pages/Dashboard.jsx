@@ -61,6 +61,12 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState(getStoredSessions)
   const { t } = useLanguage()
   const { isAuthenticated, user, loading } = useAuth()
+  
+  // Dashboard Focus Settings states
+  const [dbFocusMode, setDbFocusMode] = useState(() => localStorage.getItem('focusify_default_focus_mode') !== 'false')
+  const [dbRestReminder, setDbRestReminder] = useState(() => localStorage.getItem('focusify_break_reminder') !== 'false')
+  const [dbDistractionWarning, setDbDistractionWarning] = useState(() => localStorage.getItem('focusify_distraction_warning') !== 'false')
+  const [dbAmbienceSound, setDbAmbienceSound] = useState(() => localStorage.getItem('focusify_ambience_sound') !== 'false')
 
   useEffect(() => {
     const onFocus = () => setSessions(getStoredSessions())
@@ -81,6 +87,9 @@ export default function Dashboard() {
   const DAILY_TARGET = Number(localStorage.getItem('focusify_target_sessions') || 4)
   const dailyProgressPct = Math.min(100, Math.round((todaySessions.length / DAILY_TARGET) * 100))
   const dailyDashOffset = 188 - (188 * dailyProgressPct / 100)
+  
+  // Metamodel: Dynamic color based on progress threshold
+  const progressColor = dailyProgressPct < 50 ? 'var(--danger)' : dailyProgressPct < 100 ? '#f39c12' : 'var(--accent)'
   
   // Calculate day streak count
   const streakCount = calculateStreak(sessions)
@@ -160,8 +169,8 @@ export default function Dashboard() {
             <div className="ring-row">
               <svg width="78" height="78" viewBox="0 0 78 78">
                 <circle cx="39" cy="39" r="30" fill="none" stroke="var(--border)" strokeWidth="8" />
-                <circle cx="39" cy="39" r="30" fill="none" stroke="var(--accent)" strokeWidth="8" strokeDasharray="188" strokeDashoffset={dailyDashOffset} strokeLinecap="round" transform="rotate(-90 39 39)" />
-                <text x="39" y="44" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--accent)" fontFamily="DM Sans">{dailyProgressPct}%</text>
+                <circle cx="39" cy="39" r="30" fill="none" stroke={progressColor} strokeWidth="8" strokeDasharray="188" strokeDashoffset={dailyDashOffset} strokeLinecap="round" transform="rotate(-90 39 39)" style={{ transition: 'all 1s ease' }} />
+                <text x="39" y="44" textAnchor="middle" fontSize="13" fontWeight="700" fill={progressColor} fontFamily="DM Sans">{dailyProgressPct}%</text>
               </svg>
               <div className="ring-info">
                 <h3>{todaySessions.length} / {DAILY_TARGET}</h3>
@@ -230,10 +239,10 @@ export default function Dashboard() {
 
           <div className="card">
             <div className="ctitle">⚡ {t('dashboard.focusSettings')}</div>
-            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.focusMode')}</div><div className="ts">{t('dashboard.focusModeDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.restReminder')}</div><div className="ts">{t('dashboard.restReminderDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.distractionWarning')}</div><div className="ts">{t('dashboard.distractionWarningDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
-            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.ambienceSound')}</div><div className="ts">{t('dashboard.ambienceSoundDesc')}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
+            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.focusMode')}</div><div className="ts">{t('dashboard.focusModeDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbFocusMode} onChange={(e) => { setDbFocusMode(e.target.checked); localStorage.setItem('focusify_default_focus_mode', e.target.checked); }} /><span className="sldr"></span></label></div>
+            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.restReminder')}</div><div className="ts">{t('dashboard.restReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbRestReminder} onChange={(e) => { setDbRestReminder(e.target.checked); localStorage.setItem('focusify_break_reminder', e.target.checked); }} /><span className="sldr"></span></label></div>
+            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.distractionWarning')}</div><div className="ts">{t('dashboard.distractionWarningDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbDistractionWarning} onChange={(e) => { setDbDistractionWarning(e.target.checked); localStorage.setItem('focusify_distraction_warning', e.target.checked); }} /><span className="sldr"></span></label></div>
+            <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.ambienceSound')}</div><div className="ts">{t('dashboard.ambienceSoundDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbAmbienceSound} onChange={(e) => { setDbAmbienceSound(e.target.checked); localStorage.setItem('focusify_ambience_sound', e.target.checked); }} /><span className="sldr"></span></label></div>
             <div style={{ marginTop: 16 }}><Link to="/settings" style={{ fontSize: '.8rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>⚙️ {t('dashboard.moreSettings')}</Link></div>
           </div>
         </div>

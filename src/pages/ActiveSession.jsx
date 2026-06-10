@@ -81,6 +81,9 @@ export default function ActiveSession() {
   const distCntRef = useRef(0)
   const allowDistractionRef = useRef(false)
 
+  const [breakAlert, setBreakAlert] = useState(() => localStorage.getItem('focusify_break_reminder') !== 'false')
+  const [notifBlocked, setNotifBlocked] = useState(() => localStorage.getItem('focusify_fcp_notif_blocked') !== 'false')
+
   const [ambienceOn, setAmbienceOn] = useState(true)
   const [volume, setVolume] = useState(50)
   const playerRef = useRef(null)
@@ -219,6 +222,21 @@ export default function ActiveSession() {
           if (prev <= 1) {
             clearInterval(intervalRef.current)
             setFinished(true)
+            
+            const showBreakAlert = localStorage.getItem('focusify_break_reminder') !== 'false'
+            if (showBreakAlert) {
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(t('active.sessionCompleted') || 'Session Complete! 🍅', {
+                  body: t('setup.breakReminderDesc') || "Great job! It's time to take a break.",
+                  icon: '/favicon.ico'
+                })
+              }
+              try {
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+                audio.play()
+              } catch(e) {}
+            }
+
             // Save as completed session
             saveCompletedSession(config, TOTAL, TOTAL, distCntRef.current, 'done', isAuthenticated)
             setTimeout(() => navigate('/session-summary'), 1400)
@@ -358,7 +376,7 @@ export default function ActiveSession() {
         <div className="timer-wrap">
           <div className="sess-label">
             {config.type === 'Pomodoro' ? '🍅' : '✏️'} {config.type} · {config.duration} {t('setup.minutes')}
-            {config.name !== 'Unnamed Session' && <span style={{ display: 'block', marginTop: 6, fontSize: '.85rem', letterSpacing: '.02em', textTransform: 'none' }}>📖 {config.name}</span>}
+            {config.name !== 'Unnamed Session' && <span style={{ display: 'block', marginTop: 6, fontSize: '.85rem', letterSpacing: '.02em', textTransform: 'none', wordBreak: 'break-word', lineHeight: 1.4 }}>📖 {config.name}</span>}
           </div>
           <div className="ring-outer">
             <svg width="230" height="230" viewBox="0 0 230 230">
@@ -524,7 +542,14 @@ export default function ActiveSession() {
                   <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('settings.notifications') || 'Notifications'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>{t('active.fcpAllBlocked') || 'All blocked'}</div>
                 </div>
-                <label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label>
+                <label className="tog">
+                  <input type="checkbox" checked={notifBlocked} onChange={(e) => {
+                    const val = e.target.checked
+                    setNotifBlocked(val)
+                    localStorage.setItem('focusify_fcp_notif_blocked', val)
+                  }} />
+                  <span className="sldr"></span>
+                </label>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -532,7 +557,14 @@ export default function ActiveSession() {
                   <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('active.fcpReminder') || 'Reminder'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>{t('active.fcpBreakAlert') || 'Break alert'}</div>
                 </div>
-                <label className="tog"><input type="checkbox" /><span className="sldr"></span></label>
+                <label className="tog">
+                  <input type="checkbox" checked={breakAlert} onChange={(e) => {
+                    const val = e.target.checked
+                    setBreakAlert(val)
+                    localStorage.setItem('focusify_break_reminder', val)
+                  }} />
+                  <span className="sldr"></span>
+                </label>
               </div>
             </div>
 

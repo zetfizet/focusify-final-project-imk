@@ -37,19 +37,27 @@ export default function Navbar({ showNavLinks = true, showLoginBtn = true, showL
       {showNavLinks && (
         <div className="nav-links">
           <Link to="/" className={path === '/' ? 'active' : ''}>
-            <span className="nav-icon">🏠</span>
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </span>
             <span className="nav-text">{t('nav.dashboard')}</span>
           </Link>
           <Link to="/session-setup" className={path === '/session-setup' ? 'active' : ''}>
-            <span className="nav-icon">⏱️</span>
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </span>
             <span className="nav-text">{t('nav.focus')}</span>
           </Link>
           <Link to="/progress" className={path === '/progress' ? 'active' : ''}>
-            <span className="nav-icon">📊</span>
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </span>
             <span className="nav-text">{t('nav.progress')}</span>
           </Link>
           <Link to="/settings" className={`mobile-only-link ${path === '/settings' ? 'active' : ''}`}>
-            <span className="nav-icon">👤</span>
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </span>
             <span className="nav-text">{t('nav.profile')}</span>
           </Link>
         </div>

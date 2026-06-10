@@ -1,8 +1,29 @@
-// In-memory data store for development/testing when MongoDB is unavailable
-const store = {
+import fs from 'fs'
+import path from 'path'
+
+const STORE_FILE = path.join(process.cwd(), 'local_db.json')
+
+let store = {
   users: [],
   sessions: [],
   settings: []
+}
+
+try {
+  if (fs.existsSync(STORE_FILE)) {
+    const data = fs.readFileSync(STORE_FILE, 'utf8')
+    store = JSON.parse(data)
+  }
+} catch (err) {
+  console.warn('Could not read local_db.json', err)
+}
+
+function saveStore() {
+  try {
+    fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2))
+  } catch (err) {
+    console.warn('Could not write to local_db.json', err)
+  }
 }
 
 // Helper to generate ID
@@ -32,6 +53,7 @@ export const inMemoryStore = {
       updated_at: new Date()
     }
     store.users.push(newUser)
+    saveStore()
     return newUser
   },
 
@@ -39,6 +61,7 @@ export const inMemoryStore = {
     const user = store.users.find(u => u._id === id)
     if (user) {
       Object.assign(user, updates, { updated_at: new Date() })
+      saveStore()
     }
     return user
   },
@@ -64,6 +87,7 @@ export const inMemoryStore = {
       updated_at: new Date()
     }
     store.sessions.push(newSession)
+    saveStore()
     return newSession
   },
 
@@ -71,6 +95,7 @@ export const inMemoryStore = {
     const session = store.sessions.find(s => s._id === id)
     if (session) {
       Object.assign(session, updates, { updated_at: new Date() })
+      saveStore()
     }
     return session
   },
@@ -79,6 +104,7 @@ export const inMemoryStore = {
     const index = store.sessions.findIndex(s => s._id === id)
     if (index > -1) {
       store.sessions.splice(index, 1)
+      saveStore()
       return true
     }
     return false
@@ -97,6 +123,7 @@ export const inMemoryStore = {
       updated_at: new Date()
     }
     store.settings.push(newSettings)
+    saveStore()
     return newSettings
   },
 
@@ -104,6 +131,7 @@ export const inMemoryStore = {
     const settings = store.settings.find(s => s.user_id === userId)
     if (settings) {
       Object.assign(settings, updates, { updated_at: new Date() })
+      saveStore()
     }
     return settings
   }

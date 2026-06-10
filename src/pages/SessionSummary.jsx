@@ -58,6 +58,16 @@ export default function SessionSummary() {
   const weekSessions = allSessions.filter(s => new Date(s.endTime) >= weekStart)
   const weekTotalHours = (weekSessions.reduce((a, s) => a + s.duration, 0) / 60).toFixed(1)
   const weekAvgScore = weekSessions.length ? Math.round(weekSessions.reduce((a, s) => a + s.score, 0) / weekSessions.length) : 0
+  
+  // Metamodel colors
+  const dailyPct = Math.min(100, (todaySessions.length / targetSessions) * 100)
+  const dailyColor = dailyPct < 50 ? 'var(--danger)' : dailyPct < 100 ? '#f39c12' : 'var(--accent)'
+  
+  const weekPct = Math.min(100, (parseFloat(weekTotalHours) / targetHours) * 100)
+  const weekColor = weekPct < 50 ? 'var(--danger)' : weekPct < 100 ? '#f39c12' : 'var(--accent)'
+  
+  const monthPct = Math.min(100, (allSessions.length / 60) * 100)
+  const monthColor = monthPct < 50 ? 'var(--danger)' : monthPct < 100 ? '#f39c12' : 'var(--accent)'
 
   if (!lastSession) {
     return (
@@ -146,9 +156,9 @@ export default function SessionSummary() {
         {/* PROGRESS UPDATE */}
         <div className="card">
           <div className="ctitle">📈 {t('summary.progressUpdate') || 'Progress Update'}</div>
-          <div className="pu-item"><div className="pu-labels"><span>{(t('summary.dailyTarget') || 'Daily Target ({count} sessions)').replace('{count}', targetSessions)}</span><span>{todaySessions.length} / {targetSessions} {todaySessions.length >= targetSessions ? '✅' : ''}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (todaySessions.length / targetSessions) * 100) + '%' }}></div></div></div>
-          <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalFocusWeek') || 'Total Focus This Week'}</span><span>{weekTotalHours} / {targetHours} {t('summary.hours') || 'hours'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (parseFloat(weekTotalHours) / targetHours) * 100) + '%' }}></div></div></div>
-          <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalSessionsMonth') || 'Total Sessions This Month'}</span><span>{allSessions.length} / 60 {t('summary.sessions') || 'sessions'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: Math.min(100, (allSessions.length / 60) * 100) + '%' }}></div></div></div>
+          <div className="pu-item"><div className="pu-labels"><span>{(t('summary.dailyTarget') || 'Daily Target ({count} sessions)').replace('{count}', targetSessions)}</span><span style={{ color: dailyColor }}>{todaySessions.length} / {targetSessions} {todaySessions.length >= targetSessions ? '✅' : ''}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: dailyPct + '%', backgroundColor: dailyColor }}></div></div></div>
+          <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalFocusWeek') || 'Total Focus This Week'}</span><span style={{ color: weekColor }}>{weekTotalHours} / {targetHours} {t('summary.hours') || 'hours'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: weekPct + '%', backgroundColor: weekColor }}></div></div></div>
+          <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalSessionsMonth') || 'Total Sessions This Month'}</span><span style={{ color: monthColor }}>{allSessions.length} / 60 {t('summary.sessions') || 'sessions'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: monthPct + '%', backgroundColor: monthColor }}></div></div></div>
           <div className="pu-milestone">
             <span className="milestone">🔥 {todaySessions.length}-{t('summary.sessionDay') || 'Session Day!'}</span>
             <span className="milestone">🎯 {todayAvgScore}% {t('summary.avgScore') || 'Average Score'}</span>

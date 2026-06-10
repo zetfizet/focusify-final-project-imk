@@ -1,5 +1,6 @@
 import { User } from '../models/User.js'
 import { UserSettings } from '../models/UserSettings.js'
+import { Session } from '../models/Session.js'
 import inMemoryStore from './inMemoryStore.js'
 import bcryptjs from 'bcryptjs'
 
