@@ -83,6 +83,7 @@ export default function ActiveSession() {
   const [showFCP, setShowFCP] = useState(false)
   const [showDistract, setShowDistract] = useState(false)
   const [showStop, setShowStop] = useState(false)
+  const [showBreakModal, setShowBreakModal] = useState(false)
   const [finished, setFinished] = useState(false)
   const intervalRef = useRef(null)
   const pausedRef = useRef(false) // Align with initial state
@@ -243,11 +244,13 @@ export default function ActiveSession() {
                 const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
                 audio.play()
               } catch(e) {}
+              
+              saveCompletedSession(config, TOTAL, TOTAL, distCntRef.current, 'done', isAuthenticated)
+              setShowBreakModal(true)
+            } else {
+              saveCompletedSession(config, TOTAL, TOTAL, distCntRef.current, 'done', isAuthenticated)
+              setTimeout(() => navigate('/session-summary'), 1400)
             }
-
-            // Save as completed session
-            saveCompletedSession(config, TOTAL, TOTAL, distCntRef.current, 'done', isAuthenticated)
-            setTimeout(() => navigate('/session-summary'), 1400)
             return 0
           }
           return prev - 1
@@ -487,6 +490,19 @@ export default function ActiveSession() {
           <div className="stop-btns">
             <button className="btn-confirm-stop" onClick={handleStop}>{t('active.stopBtn') || 'Stop'}</button>
             <button className="btn-cancel-stop" onClick={() => setShowStop(false)}>{t('active.continueBtn') || 'Continue'}</button>
+          </div>
+        </div>
+      </div>
+
+      {/* BREAK MODAL */}
+      <div className={`stop-overlay ${showBreakModal ? 'show' : ''}`}>
+        <div className="stop-card">
+          <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>☕ {t('active.sessionCompleted') || 'Session Complete!'}</h2>
+          <p>{t('setup.breakReminderDesc') || "Great job! It's time to take a break. Stand up, stretch, and get some water."}</p>
+          <div className="stop-btns" style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+            <button className="btn-confirm-stop" style={{ width: '100%', background: 'var(--accent)', color: 'white' }} onClick={() => navigate('/session-summary')}>
+              {t('active.finishBtn') || 'Finish & View Summary'}
+            </button>
           </div>
         </div>
       </div>
