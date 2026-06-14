@@ -9,6 +9,10 @@ export default {
     logout: 'Logout',
     activeSession: 'Active Session'
   },
+  common: {
+    cancel: 'Cancel',
+    confirm: 'Confirm'
+  },
   dashboard: {
     welcome: 'Welcome to',
     subtitle: 'Reduce digital distractions, build consistent study habits, and track your progress every day.',
@@ -184,7 +188,8 @@ export default {
     stopSessionTitle: 'Stop Session?',
     stopSessionDesc: 'The session will be stopped early. The progress made so far will still be saved in the summary.',
     stopBtn: 'Stop',
-    continueBtn: 'Continue'
+    continueBtn: 'Continue',
+    finishBtn: 'Finish & View Summary'
   },
   summary: {
     title: 'Session Complete!',

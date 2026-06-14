@@ -9,6 +9,10 @@ export default {
     logout: 'Keluar',
     activeSession: 'Sesi Aktif'
   },
+  common: {
+    cancel: 'Batal',
+    confirm: 'Konfirmasi'
+  },
   dashboard: {
     welcome: 'Selamat datang di',
     subtitle: 'Kurangi distraksi digital, bangun kebiasaan belajar yang konsisten, dan pantau progresmu setiap hari.',
@@ -183,8 +187,9 @@ export default {
     backToSession: 'Kembali ke Sesi',
     stopSessionTitle: 'Hentikan Sesi?',
     stopSessionDesc: 'Sesi akan dihentikan lebih awal. Progres yang dicapai sejauh ini akan tetap disimpan di ringkasan.',
-    stopBtn: 'Hentikan',
-    continueBtn: 'Lanjutkan'
+    stopBtn: 'Berhenti',
+    continueBtn: 'Lanjutkan',
+    finishBtn: 'Selesai & Lihat Ringkasan'
   },
   summary: {
     title: 'Sesi Selesai!',
