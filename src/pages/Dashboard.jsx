@@ -151,7 +151,7 @@ export default function Dashboard() {
           <div className="hero-circles">
             <div className="h-circle"><span className="n">{todaySessions.length}</span><span className="l">{t('dashboard.todaySessions')}</span></div>
             <div className="h-circle"><span className="n">{(todayTotal / 60).toFixed(1)}h</span><span className="l">{t('dashboard.totalFocus')}</span></div>
-            <div className="h-circle"><span className="n" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FireIcon size={24}/>{streakCount}</span><span className="l">{t('dashboard.dayStreak')}</span></div>
+            <div className="h-circle"><span className="n" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><FireIcon size={24}/>{streakCount}</span><span className="l">{t('dashboard.dayStreak')}</span></div>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ export default function Dashboard() {
           <div className="card kpi"><div className="kpi-n">{monthSessions.length || 0}</div><div className="kpi-l">{t('dashboard.monthSessions')}</div><div className="kpi-d">{t('dashboard.last30Days')}</div></div>
           <div className="card kpi"><div className="kpi-n">{weekTotal}h</div><div className="kpi-l">{t('dashboard.weekFocus')}</div><div className="kpi-d">{t('dashboard.thisWeek')}</div></div>
           <div className="card kpi"><div className="kpi-n">{weekAvgScore || 0}%</div><div className="kpi-l">{t('dashboard.avgScore')}</div><div className="kpi-d">{t('dashboard.weeklyAvg')}</div></div>
-          <div className="card kpi"><div className="kpi-n" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FireIcon size={28}/>{streakCount}</div><div className="kpi-l">{t('dashboard.dayStreak')}</div><div className="kpi-d" style={{ color: 'var(--accent)' }}>{t('dashboard.currentStreak') || 'Current Streak'}</div></div>
+          <div className="card kpi"><div className="kpi-n" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><FireIcon size={28}/>{streakCount}</div><div className="kpi-l">{t('dashboard.dayStreak')}</div><div className="kpi-d" style={{ color: 'var(--accent)' }}>{t('dashboard.currentStreak') || 'Current Streak'}</div></div>
         </div>
 
         {/* Progress + Streak */}

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
+import { FireIcon } from '../components/Icons'
 
 const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
 
@@ -197,7 +198,7 @@ export default function Progress() {
           <div className="card kpi"><div className="kpi-n">{sessions.length || 0}</div><div className="kpi-l">{t('progress.totalSessions')}</div><div className="kpi-d">{t('progress.storedLocally')}</div></div>
           <div className="card kpi"><div className="kpi-n">{todayTotal ? (todayTotal / 60).toFixed(1) + 'h' : '0h'}</div><div className="kpi-l">{t('progress.totalFocusToday')}</div><div className="kpi-d">{t('progress.addedSessions').replace('{count}', todaySessions.length)}</div></div>
           <div className="card kpi"><div className="kpi-n">{todayAvgScore || 0}%</div><div className="kpi-l">{t('progress.avgFocusScore')}</div><div className="kpi-d">{t('progress.todayAvg')}</div></div>
-          <div className="card kpi"><div className="kpi-n">🔥{todaySessions.length || 0}</div><div className="kpi-l">{t('progress.todaysSessions')}</div><div className="kpi-d" style={{ color:'var(--accent)' }}>{t('progress.target').replace('{count}', TARGET)}</div></div>
+          <div className="card kpi"><div className="kpi-n" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><FireIcon size={28}/>{todaySessions.length || 0}</div><div className="kpi-l">{t('progress.todaysSessions')}</div><div className="kpi-d" style={{ color:'var(--accent)' }}>{t('progress.target').replace('{count}', TARGET)}</div></div>
         </div>
 
         {/* DAILY */}
