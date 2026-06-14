@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
+import { PlayIcon } from '../components/Icons'
 
 export default function SessionSetup() {
   const navigate = useNavigate()
@@ -255,7 +256,7 @@ export default function SessionSetup() {
           localStorage.setItem('focusify_active_session', JSON.stringify(config))
           localStorage.removeItem('focusify_setup_draft')
           navigate('/active-session')
-        }}>▶ {t('setup.startSessionBtn')}</button>
+        }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><PlayIcon size={20}/> {t('setup.startSessionBtn')}</button>
       </main>
       {toast.show && (
         <div className="toast-notification">

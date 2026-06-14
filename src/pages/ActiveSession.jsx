@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
+import { PlayIcon, PauseIcon, StopIcon } from '../components/Icons'
 
 const CIRC = 2 * Math.PI * 100
 
@@ -397,14 +398,14 @@ export default function ActiveSession() {
           </div>
 
           <div className="status-row">
-            <div className={`sbadge ${paused ? 'paused' : 'running'}`}>{finished ? `✅ ${t('dashboard.completed')}` : paused ? `⏸ ${t('active.paused') || 'Paused'}` : `● ${t('active.running') || 'Running'}`}</div>
+            <div className={`sbadge ${paused ? 'paused' : 'running'}`}>{finished ? `✅ ${t('dashboard.completed')}` : paused ? <><PauseIcon size={12}/> {t('active.paused') || 'Paused'}</> : `● ${t('active.running') || 'Running'}`}</div>
             <div className="info-pill">{config.ambience}</div>
             <div className="info-pill">{focusMode ? `🛡️ ${t('active.fmOn') || 'Focus Mode ON'}` : `🛡️ ${t('active.fmOff') || 'Focus Mode OFF'}`}</div>
           </div>
 
           <div className="controls">
-            <button className="btn-icon stop" onClick={() => setShowStop(true)} title="Stop Session">⏹</button>
-            <button className={`btn-main ${paused ? 'paused-state' : ''}`} onClick={togglePause} title="Pause / Resume">{paused ? '▶' : '⏸'}</button>
+            <button className="btn-icon stop" onClick={() => setShowStop(true)} title="Stop Session" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}><StopIcon size={20}/></button>
+            <button className={`btn-main ${paused ? 'paused-state' : ''}`} onClick={togglePause} title="Pause / Resume" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>{paused ? <PlayIcon size={24}/> : <PauseIcon size={24}/>}</button>
           </div>
 
           {/* Ambience Volume Slider */}
@@ -481,7 +482,7 @@ export default function ActiveSession() {
       {/* STOP OVERLAY */}
       <div className={`stop-overlay ${showStop ? 'show' : ''}`}>
         <div className="stop-card">
-          <h2>⏹ {t('active.stopSessionTitle') || 'Stop Session?'}</h2>
+          <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><StopIcon size={24} /> {t('active.stopSessionTitle') || 'Stop Session?'}</h2>
           <p>{t('active.stopSessionDesc') || 'The session will be stopped early. The progress made so far will still be saved in the summary.'}</p>
           <div className="stop-btns">
             <button className="btn-confirm-stop" onClick={handleStop}>{t('active.stopBtn') || 'Stop'}</button>
@@ -576,12 +577,12 @@ export default function ActiveSession() {
             </div>
 
             <div style={{ marginTop: '20px', padding: '10px', background: 'var(--bg2)', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text2)', borderLeft: '3px solid var(--accent)' }}>
-              💡 {t('active.fcpNote') || 'Session paused. Press ▶ to continue or ⏹ to stop the session.'}
+              💡 {t('active.fcpNote') || 'Session paused. Press Play to continue or Stop to end the session.'}
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-              <button className="btn-confirm-stop" style={{ background: 'var(--accent)', color: 'white', padding: '8px 20px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }} onClick={togglePause}>
-                ▶ Resume
+              <button className="btn-confirm-stop" style={{ background: 'var(--accent)', color: 'white', padding: '8px 20px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }} onClick={togglePause}>
+                <PlayIcon size={14} /> Resume
               </button>
             </div>
           </div>

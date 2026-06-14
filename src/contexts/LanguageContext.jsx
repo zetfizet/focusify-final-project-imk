@@ -8,11 +8,11 @@ export const LanguageContext = createContext()
 
 export function LanguageProvider({ children }) {
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('focusify_lang') || 'en'
+    return localStorage.getItem('focusify_lang_v2') || 'en'
   })
 
   useEffect(() => {
-    localStorage.setItem('focusify_lang', language)
+    localStorage.setItem('focusify_lang_v2', language)
   }, [language])
 
   const t = (key) => {

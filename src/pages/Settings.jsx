@@ -4,11 +4,12 @@ import { AuthContext } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import { sessionsAPI, userAPI } from '../services/api'
 import Navbar from '../components/Navbar'
+import { UserIcon, ClockIcon, BellIcon, PaletteIcon, LockIcon, TrashIcon, LogOutIcon, SettingsIcon } from '../components/Icons'
 
 export default function Settings() {
-  const [sec, setSec] = useState('account')
-  const [activeDef, setActiveDef] = useState(1)
   const { isAuthenticated, user, logout, updateUserState } = useContext(AuthContext)
+  const [sec, setSec] = useState(() => isAuthenticated ? 'account' : 'session')
+  const [activeDef, setActiveDef] = useState(1)
   const { t, language, setLanguage } = useLanguage()
   const [profileData, setProfileData] = useState({
     firstName: user?.first_name || '',
@@ -17,6 +18,12 @@ export default function Settings() {
     university: user?.university || '',
     major: user?.major || ''
   })
+
+  useEffect(() => {
+    if (!isAuthenticated && (sec === 'account' || sec === 'danger')) {
+      setSec('session')
+    }
+  }, [isAuthenticated, sec])
 
   useEffect(() => {
     if (user) {
@@ -291,16 +298,16 @@ export default function Settings() {
   }
 
   const navItems = [
-    { id: 'account', icon: '👤', label: t('settings.accountSettings') },
-    { id: 'session', icon: '⏱️', label: t('settings.defaultSession') },
-    { id: 'notif', icon: '🔔', label: t('settings.notifications') },
-    { id: 'appear', icon: '🎨', label: t('settings.appearance') },
+    ...(isAuthenticated ? [{ id: 'account', icon: <UserIcon size={18}/>, label: t('settings.accountSettings') }] : []),
+    { id: 'session', icon: <ClockIcon size={18}/>, label: t('settings.defaultSession') },
+    { id: 'notif', icon: <BellIcon size={18}/>, label: t('settings.notifications') },
+    { id: 'appear', icon: <PaletteIcon size={18}/>, label: t('settings.appearance') },
     { id: 'divider' },
-    { id: 'privacy', icon: '🔒', label: t('settings.privacyDataTitle') || 'Privacy & Data' },
-    { id: 'danger', icon: '🗑️', label: t('settings.deleteAccount'), style: { color: '#e74c3c' } },
+    { id: 'privacy', icon: <LockIcon size={18}/>, label: t('settings.privacyDataTitle') || 'Privacy & Data' },
     ...(isAuthenticated ? [
+      { id: 'danger', icon: <TrashIcon size={18}/>, label: t('settings.deleteAccount'), style: { color: '#e74c3c' } },
       { id: 'divider-logout' },
-      { id: 'logout', icon: '🚪', label: t('nav.logout') || 'Logout', style: { color: '#e74c3c', fontWeight: 'bold' }, isAction: true }
+      { id: 'logout', icon: <LogOutIcon size={18}/>, label: t('nav.logout') || 'Logout', style: { color: '#e74c3c', fontWeight: 'bold' }, isAction: true }
     ] : [])
   ]
 
@@ -308,7 +315,7 @@ export default function Settings() {
     <>
       <Navbar />
       <main className="container medium">
-        <div className="page-hdr"><h1>⚙️ {t('settings.title')}</h1><p>{t('settings.subtitle')}</p></div>
+        <div className="page-hdr"><h1><SettingsIcon size={28} /> {t('settings.title')}</h1><p>{t('settings.subtitle')}</p></div>
 
         <div className="settings-layout">
           <div className="settings-nav">

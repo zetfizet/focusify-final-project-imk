@@ -374,7 +374,7 @@ main.container.mini { max-width: 680px; }
   .nav-logo{font-size:.95rem;gap:4px}
   .nav-logo .dot{width:6px;height:6px}
   .nav-right{gap:4px}
-  .btn-nav-login{display:none}
+  .btn-nav-login{padding:4px 10px;font-size:0.7rem;}
   .theme-btn{width:24px;height:24px;font-size:.7rem}
   .back-link{display:none}
   

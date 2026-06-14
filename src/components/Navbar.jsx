@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useContext, useState, useRef, useEffect } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
+import { SettingsIcon, LogOutIcon, MoonIcon, SunIcon } from './Icons'
 
 export default function Navbar({ showNavLinks = true, showLoginBtn = true, showLiveBadge = false, children }) {
   const location = useLocation()
@@ -25,8 +26,10 @@ export default function Navbar({ showNavLinks = true, showLoginBtn = true, showL
     const h = document.documentElement
     const d = h.getAttribute('data-theme') === 'dark'
     h.setAttribute('data-theme', d ? 'light' : 'dark')
-    document.getElementById('thbtn').textContent = d ? '🌿' : '🌙'
+    setDarkMode(!d)
   }
+
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
 
   return (
     <nav>
@@ -54,12 +57,14 @@ export default function Navbar({ showNavLinks = true, showLoginBtn = true, showL
             </span>
             <span className="nav-text">{t('nav.progress')}</span>
           </Link>
-          <Link to="/settings" className={`mobile-only-link ${path === '/settings' ? 'active' : ''}`}>
-            <span className="nav-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </span>
-            <span className="nav-text">{t('nav.profile')}</span>
-          </Link>
+          {isAuthenticated && (
+            <Link to="/settings" className={`mobile-only-link ${path === '/settings' ? 'active' : ''}`}>
+              <span className="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </span>
+              <span className="nav-text">{t('nav.profile')}</span>
+            </Link>
+          )}
         </div>
       )}
       <div className="nav-right">
@@ -78,14 +83,20 @@ export default function Navbar({ showNavLinks = true, showLoginBtn = true, showL
                   <strong>{user?.username || 'User'}</strong>
                   <span>{user?.email || 'user@example.com'}</span>
                 </div>
-                <Link to="/settings" className="pd-item" onClick={() => setIsDropdownOpen(false)}>⚙️ {t('nav.settings')} & {t('nav.profile')}</Link>
+                <Link to="/settings" className="pd-item" onClick={() => setIsDropdownOpen(false)}>
+                  <SettingsIcon size={16} /> {t('nav.settings')} & {t('nav.profile')}
+                </Link>
                 <div className="pd-divider"></div>
-                <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="pd-item text-danger">🚪 {t('nav.logout')}</button>
+                <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="pd-item text-danger">
+                  <LogOutIcon size={16} /> {t('nav.logout')}
+                </button>
               </div>
             )}
           </div>
         )}
-        <button className="theme-btn" onClick={toggleTheme} id="thbtn">🌿</button>
+        <button className="theme-btn" onClick={toggleTheme} id="thbtn">
+          {darkMode ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+        </button>
       </div>
     </nav>
   )

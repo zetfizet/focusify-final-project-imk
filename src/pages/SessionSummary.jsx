@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
 import { performFullDataSync } from '../services/migration'
+import { FireIcon } from '../components/Icons'
 
 export default function SessionSummary() {
   const navigate = useNavigate()
@@ -160,7 +161,7 @@ export default function SessionSummary() {
           <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalFocusWeek') || 'Total Focus This Week'}</span><span style={{ color: weekColor }}>{weekTotalHours} / {targetHours} {t('summary.hours') || 'hours'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: weekPct + '%', backgroundColor: weekColor }}></div></div></div>
           <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalSessionsMonth') || 'Total Sessions This Month'}</span><span style={{ color: monthColor }}>{allSessions.length} / 60 {t('summary.sessions') || 'sessions'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: monthPct + '%', backgroundColor: monthColor }}></div></div></div>
           <div className="pu-milestone">
-            <span className="milestone">🔥 {todaySessions.length}-{t('summary.sessionDay') || 'Session Day!'}</span>
+            <span className="milestone" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FireIcon size={14}/> {todaySessions.length}-{t('summary.sessionDay') || 'Session Day!'}</span>
             <span className="milestone">🎯 {todayAvgScore}% {t('summary.avgScore') || 'Average Score'}</span>
             <span className="milestone">⭐ {lastSession.score}% {t('summary.thisSession') || 'This Session'}</span>
           </div>

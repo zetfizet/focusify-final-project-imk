@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
+import { FireIcon, PlayIcon, SettingsIcon } from '../components/Icons'
 
 const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
 
@@ -143,14 +144,14 @@ export default function Dashboard() {
             </h1>
             <p>{t('dashboard.subtitle')}</p>
             <div className="hero-cta">
-              <Link to="/session-setup" className="btn-hero">▶ {t('dashboard.startFocus')}</Link>
+              <Link to="/session-setup" className="btn-hero" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><PlayIcon size={16}/> {t('dashboard.startFocus')}</Link>
               <Link to="/progress" className="btn-hero-ghost">📊 {t('dashboard.viewProgress')}</Link>
             </div>
           </div>
           <div className="hero-circles">
             <div className="h-circle"><span className="n">{todaySessions.length}</span><span className="l">{t('dashboard.todaySessions')}</span></div>
             <div className="h-circle"><span className="n">{(todayTotal / 60).toFixed(1)}h</span><span className="l">{t('dashboard.totalFocus')}</span></div>
-            <div className="h-circle"><span className="n">🔥{streakCount}</span><span className="l">{t('dashboard.dayStreak')}</span></div>
+            <div className="h-circle"><span className="n" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FireIcon size={24}/>{streakCount}</span><span className="l">{t('dashboard.dayStreak')}</span></div>
           </div>
         </div>
 
@@ -159,7 +160,7 @@ export default function Dashboard() {
           <div className="card kpi"><div className="kpi-n">{monthSessions.length || 0}</div><div className="kpi-l">{t('dashboard.monthSessions')}</div><div className="kpi-d">{t('dashboard.last30Days')}</div></div>
           <div className="card kpi"><div className="kpi-n">{weekTotal}h</div><div className="kpi-l">{t('dashboard.weekFocus')}</div><div className="kpi-d">{t('dashboard.thisWeek')}</div></div>
           <div className="card kpi"><div className="kpi-n">{weekAvgScore || 0}%</div><div className="kpi-l">{t('dashboard.avgScore')}</div><div className="kpi-d">{t('dashboard.weeklyAvg')}</div></div>
-          <div className="card kpi"><div className="kpi-n">🔥{streakCount}</div><div className="kpi-l">{t('dashboard.dayStreak')}</div><div className="kpi-d" style={{ color: 'var(--accent)' }}>{t('dashboard.currentStreak') || 'Current Streak'}</div></div>
+          <div className="card kpi"><div className="kpi-n" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FireIcon size={28}/>{streakCount}</div><div className="kpi-l">{t('dashboard.dayStreak')}</div><div className="kpi-d" style={{ color: 'var(--accent)' }}>{t('dashboard.currentStreak') || 'Current Streak'}</div></div>
         </div>
 
         {/* Progress + Streak */}
@@ -243,7 +244,7 @@ export default function Dashboard() {
             <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.restReminder')}</div><div className="ts">{t('dashboard.restReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbRestReminder} onChange={(e) => { setDbRestReminder(e.target.checked); localStorage.setItem('focusify_break_reminder', e.target.checked); }} /><span className="sldr"></span></label></div>
             <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.distractionWarning')}</div><div className="ts">{t('dashboard.distractionWarningDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbDistractionWarning} onChange={(e) => { setDbDistractionWarning(e.target.checked); localStorage.setItem('focusify_distraction_warning', e.target.checked); }} /><span className="sldr"></span></label></div>
             <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.ambienceSound')}</div><div className="ts">{t('dashboard.ambienceSoundDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbAmbienceSound} onChange={(e) => { setDbAmbienceSound(e.target.checked); localStorage.setItem('focusify_ambience_sound', e.target.checked); }} /><span className="sldr"></span></label></div>
-            <div style={{ marginTop: 16 }}><Link to="/settings" style={{ fontSize: '.8rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>⚙️ {t('dashboard.moreSettings')}</Link></div>
+            <div style={{ marginTop: 16 }}><Link to="/settings" style={{ fontSize: '.8rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}><SettingsIcon size={14} style={{ marginRight: '4px' }} /> {t('dashboard.moreSettings')}</Link></div>
           </div>
         </div>
 
