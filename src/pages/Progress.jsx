@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
-import { FireIcon, ChartIcon, TargetIcon, TimerIcon, ZapIcon, ClockIcon, ActivityIcon, HistoryIcon, BookIcon, StarIcon, ShieldIcon, LeafIcon, EditIcon, LockIcon } from '../components/Icons'
+import { FireIcon, ChartIcon, TargetIcon, TimerIcon, ZapIcon, ClockIcon, ActivityIcon, HistoryIcon, BookIcon, StarIcon, ShieldIcon, LeafIcon, EditIcon, LockIcon, ClipboardIcon, PaletteIcon } from '../components/Icons'
 
 const SESSION_ICONS = [
   <BookIcon size={20} />, <EditIcon size={20} />, <ActivityIcon size={20} />, <ClipboardIcon size={20} />, 

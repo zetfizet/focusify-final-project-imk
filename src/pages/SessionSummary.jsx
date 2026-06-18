@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
 import { performFullDataSync } from '../services/migration'
-import { FireIcon, LeafIcon, TimerIcon, CheckIcon, AlertTriangleIcon, TomatoIcon, EditIcon, ShieldIcon, ClipboardIcon, ChartIcon, TargetIcon, StarIcon, LightbulbIcon, SaveIcon, LockIcon, PlayIcon, HomeIcon } from '../components/Icons'
+import { FireIcon, LeafIcon, TimerIcon, CheckIcon, AlertTriangleIcon, TomatoIcon, EditIcon, ShieldIcon, ClipboardIcon, ChartIcon, TargetIcon, StarIcon, LightbulbIcon, SaveIcon, LockIcon, PlayIcon, HomeIcon, MoonIcon } from '../components/Icons'
 
 export default function SessionSummary() {
   const navigate = useNavigate()
