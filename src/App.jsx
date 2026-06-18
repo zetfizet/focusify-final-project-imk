@@ -38,8 +38,8 @@ export default function App() {
 
         if (lastSent !== todayStr) {
           if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Focusify 🎯', {
-              body: 'Time to start your daily focus session! Let\'s stay productive. 🌱',
+            new Notification('Focusify', {
+              body: 'Time to start your daily focus session! Let\'s stay productive.',
               icon: '/favicon.ico'
             })
             localStorage.setItem('focusify_last_reminder_sent', todayStr)

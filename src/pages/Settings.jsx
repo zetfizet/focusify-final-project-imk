@@ -4,7 +4,7 @@ import { AuthContext } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import { sessionsAPI, userAPI } from '../services/api'
 import Navbar from '../components/Navbar'
-import { UserIcon, ClockIcon, BellIcon, PaletteIcon, LockIcon, TrashIcon, LogOutIcon, SettingsIcon } from '../components/Icons'
+import { UserIcon, ClockIcon, BellIcon, PaletteIcon, LockIcon, TrashIcon, LogOutIcon, SettingsIcon, TimerIcon, TargetIcon, AlertTriangleIcon, CheckIcon, XIcon, StarIcon, AVATAR_OPTIONS, getAvatarIcon } from '../components/Icons'
 
 export default function Settings() {
   const { isAuthenticated, user, logout, updateUserState } = useContext(AuthContext)
@@ -85,13 +85,13 @@ export default function Settings() {
       if (Notification.permission === 'default') {
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
-            showNotification('🔔 ' + (t('settings.notifPermissionGranted') || 'Notification permission granted!'))
+            showNotification(t('settings.notifPermissionGranted') || 'Notification permission granted!', 'success')
           } else if (permission === 'denied') {
-            showNotification('⚠️ ' + (t('settings.notifPermissionDenied') || 'Notification permission denied. Please check browser settings.'))
+            showNotification(t('settings.notifPermissionDenied') || 'Notification permission denied. Please check browser settings.', 'warning')
           }
         })
       } else if (Notification.permission === 'denied') {
-        showNotification('⚠️ ' + (t('settings.notifPermissionDenied') || 'Notification permission denied. Please check browser settings.'))
+        showNotification(t('settings.notifPermissionDenied') || 'Notification permission denied. Please check browser settings.', 'warning')
       }
     }
   }
@@ -101,7 +101,7 @@ export default function Settings() {
       if (dailyReminder && 'Notification' in window && Notification.permission !== 'granted') {
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') {
-          showNotification('⚠️ ' + (t('settings.notifPermissionDenied') || 'Notifications are disabled in browser.'))
+          showNotification(t('settings.notifPermissionDenied') || 'Notifications are disabled in browser.', 'warning')
         }
       }
 
@@ -120,20 +120,22 @@ export default function Settings() {
           reminder_time: reminderTime
         })
       }
-      showNotification('✅ ' + (t('settings.saveNotificationsSuccess') || 'Notification settings saved!'))
+      showNotification(t('settings.saveNotificationsSuccess') || 'Notification settings saved!', 'success')
     } catch (e) {
       console.error('Save notifications error:', e)
-      showNotification('❌ Error saving notifications settings.')
+      showNotification('Error saving notifications settings.', 'error')
     }
   }
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
+  const [toastType, setToastType] = useState('success')
   const [showToast, setShowToast] = useState(false)
   const [modal, setModal] = useState({ show: false, title: '', message: '', onConfirm: null, isConfirm: false })
 
-  const showNotification = (msg) => {
+  const showNotification = (msg, type = 'success') => {
     setToastMsg(msg)
+    setToastType(type)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 3000)
   }
@@ -150,8 +152,7 @@ export default function Settings() {
     setLanguage(localLanguage)
     const h = document.documentElement
     h.setAttribute('data-theme', localDarkMode ? 'dark' : 'light')
-    const btn = document.getElementById('thbtn')
-    if (btn) btn.textContent = localDarkMode ? '🌙' : '🌿'
+    h.setAttribute('data-theme', localDarkMode ? 'dark' : 'light')
 
     localStorage.setItem('focusify_animations_enabled', localAnimations)
     if (localAnimations) {
@@ -160,7 +161,7 @@ export default function Settings() {
       document.documentElement.classList.add('no-animations')
     }
 
-    showNotification('✅ Appearance updated successfully!')
+    showNotification('Appearance updated successfully!', 'success')
   }
 
   const handleResetProgress = async () => {
@@ -181,7 +182,7 @@ export default function Settings() {
       localStorage.removeItem('focusify_sessions')
       localStorage.removeItem('focusify_last_session')
       localStorage.removeItem('focusify_setup_draft')
-      showNotification('✅ All progress has been reset.')
+      showNotification('All progress has been reset.', 'success')
     }
   }
 
@@ -207,23 +208,23 @@ export default function Settings() {
       document.body.appendChild(downloadAnchor)
       downloadAnchor.click()
       downloadAnchor.remove()
-      showNotification('📥 Data downloaded successfully!')
+      showNotification('Data downloaded successfully!', 'success')
     } catch (e) {
       console.error('Download data failed:', e)
-      showNotification('❌ Failed to export data.')
+      showNotification('Failed to export data.', 'error')
     }
   }
 
   function confirmDanger(type) {
     const msgs = { reset: 'Reset all progress? This cannot be undone.', delete: 'Delete account permanently? All data will be lost forever.' }
     showConfirm(
-      type === 'reset' ? '⚠️ Reset Progress' : '⚠️ Delete Account',
+      type === 'reset' ? 'Reset Progress' : 'Delete Account',
       msgs[type],
       () => {
         if (type === 'reset') {
           handleResetProgress()
         } else if (type === 'delete') {
-          showNotification('Account deleted.')
+          showNotification('Account deleted.', 'success')
           logout()
         }
       }
@@ -241,35 +242,35 @@ export default function Settings() {
         })
         if (response.data?.success) {
           updateUserState(response.data.user)
-          showNotification('✅ Profile updated successfully!')
+          showNotification('Profile updated successfully!', 'success')
         } else {
-          showNotification('❌ Failed to update profile.')
+          showNotification('Failed to update profile.', 'error')
         }
       } else {
-        showNotification('❌ Please sign in to update profile.')
+        showNotification('Please sign in to update profile.', 'warning')
       }
     } catch (e) {
       console.error('Update profile error:', e)
-      showNotification('❌ Error updating profile.')
+      showNotification('Error updating profile.', 'error')
     }
   }
 
-  const handleSelectAvatar = async (emoji) => {
+  const handleSelectAvatar = async (avatarKey) => {
     try {
       if (isAuthenticated) {
-        const response = await userAPI.updateProfile({ avatar: emoji })
+        const response = await userAPI.updateProfile({ avatar: avatarKey })
         if (response.data?.success) {
           updateUserState(response.data.user)
-          showNotification('✅ Avatar updated successfully!')
+          showNotification('Avatar updated successfully!', 'success')
         } else {
-          showNotification('❌ Failed to update avatar.')
+          showNotification('Failed to update avatar.', 'error')
         }
       } else {
-        showNotification('❌ Please sign in to change avatar.')
+        showNotification('Please sign in to change avatar.', 'warning')
       }
     } catch (e) {
       console.error('Update avatar error:', e)
-      showNotification('❌ Error updating avatar.')
+      showNotification('Error updating avatar.', 'error')
     } finally {
       setShowAvatarPicker(false)
     }
@@ -286,15 +287,15 @@ export default function Settings() {
           weekly_hours_target: targetHours
         })
       }
-      showNotification('✅ Learning targets saved successfully!')
+      showNotification('Learning targets saved successfully!', 'success')
     } catch (e) {
       console.error('Save targets error:', e)
-      showNotification('❌ Error saving targets.')
+      showNotification('Error saving targets.', 'error')
     }
   }
 
   const handleGenericSave = (msg) => {
-    showNotification(`✅ ${msg}`)
+    showNotification(msg, 'success')
   }
 
   const navItems = [
@@ -348,11 +349,11 @@ export default function Settings() {
             {/* ACCOUNT */}
             {sec === 'account' && (
               <div className="card">
-                <div className="ctitle">👤 {t('settings.accountSettings')}</div>
+                <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><UserIcon size={20}/> {t('settings.accountSettings')}</div>
                 {!isAuthenticated ? (
                   <>
                     <div className="guest-cta"><p>{t('settings.guestCta')}</p><Link to="/auth" className="btn-login-cta">{t('settings.signInFree')}</Link></div>
-                    <div className="avatar-row"><div className="avatar">🌿</div><div className="avatar-info"><h3>{t('settings.guestUser')}</h3><p>{t('settings.guestDesc')}</p><button className="btn-change-ava">{t('settings.changePhoto')}</button></div></div>
+                    <div className="avatar-row"><div className="avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserIcon size={32} color="var(--accent)" /></div><div className="avatar-info"><h3>{t('settings.guestUser')}</h3><p>{t('settings.guestDesc')}</p><button className="btn-change-ava">{t('settings.changePhoto')}</button></div></div>
                     <div className="frow"><div className="fgroup"><label>{t('settings.firstName')}</label><input type="text" placeholder={t('settings.firstName')} disabled /></div><div className="fgroup"><label>{t('settings.lastName')}</label><input type="text" placeholder={t('settings.lastName')} disabled /></div></div>
                     <div className="fgroup"><label>{t('settings.email')}</label><input type="email" placeholder="Sign in to fill email" disabled /></div>
                     <div className="fgroup"><label>{t('settings.university')}</label><input type="text" placeholder="Sign in to fill" disabled /></div>
@@ -363,7 +364,9 @@ export default function Settings() {
                   <>
                     <div style={{ padding: '12px', background: '#efe', border: '1px solid #cfc', borderRadius: 6, marginBottom: 16, color: '#373', fontSize: '14px' }}>{t('settings.loggedInAs')}<strong>{user?.email}</strong></div>
                     <div className="avatar-row">
-                      <div className="avatar">{user?.avatar || '👤'}</div>
+                      <div className="pfl-avatar">
+                        {user?.avatar ? getAvatarIcon(user.avatar, { size: 32, color: "var(--accent)" }) : <UserIcon size={32} color="var(--accent)" />}
+                      </div>
                       <div className="avatar-info">
                         <h3>{user?.username || 'User'}</h3>
                         <p>{t('settings.activeLoggedIn')}</p>
@@ -407,7 +410,7 @@ export default function Settings() {
             {sec === 'session' && (
               <>
                 <div className="card">
-                  <div className="ctitle">⏱️ {t('settings.defaultSession')}</div>
+                  <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><TimerIcon size={20}/> {t('settings.defaultSession')}</div>
                   <div className="fgroup"><label>{t('settings.defaultMethod')}</label><select defaultValue="pomo"><option value="pomo">{t('settings.pomo25')}</option><option value="custom">{t('settings.customDuration')}</option></select></div>
                   <div className="fgroup"><label>{t('settings.defaultPomo')}</label>
                     <div className="def-grid">
@@ -421,7 +424,7 @@ export default function Settings() {
                   <div style={{ marginTop: 14 }}><button className="btn-save-set" onClick={() => handleGenericSave(t('settings.saveDefault'))}>{t('settings.saveDefault')}</button></div>
                 </div>
                 <div className="card">
-                  <div className="ctitle">🎯 {t('settings.learningTarget')}</div>
+                  <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><TargetIcon size={20}/> {t('settings.learningTarget')}</div>
                   <div className="frow">
                     <div className="fgroup">
                       <label>{t('settings.targetSessions')}</label>
@@ -452,7 +455,7 @@ export default function Settings() {
             {/* NOTIFIKASI */}
             {sec === 'notif' && (
               <div className="card">
-                <div className="ctitle">🔔 {t('settings.notificationSettings')}</div>
+                <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BellIcon size={20}/> {t('settings.notificationSettings')}</div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dailyReminder')}</div><div className="ts">{t('settings.dailyReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={dailyReminder} onChange={(e) => handleDailyReminderChange(e.target.checked)} /><span className="sldr"></span></label></div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.breakReminder')}</div><div className="ts">{t('settings.breakReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={breakReminder} onChange={(e) => setBreakReminder(e.target.checked)} /><span className="sldr"></span></label></div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.streakAchievement')}</div><div className="ts">{t('settings.streakAchievementDesc')}</div></div><label className="tog"><input type="checkbox" checked={streakAchievement} onChange={(e) => setStreakAchievement(e.target.checked)} /><span className="sldr"></span></label></div>
@@ -465,7 +468,7 @@ export default function Settings() {
             {/* TAMPILAN */}
             {sec === 'appear' && (
               <div className="card">
-                <div className="ctitle">🎨 {t('settings.appearanceTheme')}</div>
+                <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><PaletteIcon size={20}/> {t('settings.appearanceTheme')}</div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.darkMode')}</div><div className="ts">{t('settings.darkModeDesc')}</div></div><label className="tog"><input type="checkbox" checked={localDarkMode} onChange={(e) => setLocalDarkMode(e.target.checked)} /><span className="sldr"></span></label></div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.animations')}</div><div className="ts">{t('settings.animationsDesc')}</div></div><label className="tog"><input type="checkbox" checked={localAnimations} onChange={(e) => setLocalAnimations(e.target.checked)} /><span className="sldr"></span></label></div>
                 <div className="fgroup" style={{ marginTop: 16 }}>
@@ -482,7 +485,7 @@ export default function Settings() {
             {/* PRIVASI */}
             {sec === 'privacy' && (
               <div className="card">
-                <div className="ctitle">🔒 {t('settings.privacyDataTitle')}</div>
+                <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><LockIcon size={20}/> {t('settings.privacyDataTitle')}</div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.usageAnalytics')}</div><div className="ts">{t('settings.usageAnalyticsDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
                 <div className="trow"><div className="tinfo"><div className="tl">{t('settings.dataSync')}</div><div className="ts">{t('settings.dataSyncDesc')}</div></div><label className="tog"><input type="checkbox" /><span className="sldr"></span></label></div>
                 <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -496,7 +499,7 @@ export default function Settings() {
             {/* DANGER */}
             {sec === 'danger' && (
               <div className="card">
-                <div className="ctitle" style={{ color: '#e74c3c' }}>⚠️ {t('settings.dangerZone')}</div>
+                <div className="ctitle" style={{ color: '#e74c3c', display: 'flex', alignItems: 'center', gap: '8px' }}><AlertTriangleIcon size={20}/> {t('settings.dangerZone')}</div>
                 <div className="danger-row"><div className="dr-info"><div className="drl">{t('settings.resetProgress')}</div><div className="drs">{t('settings.resetProgressDesc')}</div></div><button className="btn-danger" onClick={() => confirmDanger('reset')}>{t('settings.resetBtn')}</button></div>
                 <div className="danger-row"><div className="dr-info"><div className="drl">{t('settings.deletePermanently')}</div><div className="drs">{t('settings.deletePermanentlyDesc')}</div></div><button className="btn-danger" onClick={() => confirmDanger('delete')}>{t('settings.deleteAccountBtn')}</button></div>
               </div>
@@ -506,8 +509,12 @@ export default function Settings() {
       </main>
 
       <div className="toast-container">
-        <div className={`toast ${showToast ? 'show' : ''}`}>
-          <div className="toast-icon">✨</div>
+        <div className={`toast ${showToast ? 'show' : ''} ${toastType}`}>
+          <div className="toast-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {toastType === 'success' && <CheckIcon size={18} color="white" />}
+            {toastType === 'error' && <XIcon size={18} color="white" />}
+            {toastType === 'warning' && <AlertTriangleIcon size={18} color="white" />}
+          </div>
           <div className="toast-msg">{toastMsg}</div>
         </div>
       </div>
@@ -540,21 +547,24 @@ export default function Settings() {
       {showAvatarPicker && (
         <div className="custom-modal-overlay">
           <div className="custom-modal-card" style={{ maxWidth: '400px', width: '90%' }}>
-            <h3>✨ Choose Avatar</h3>
-            <p style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '16px' }}>Select an emoji avatar for your profile:</p>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><StarIcon size={20} /> Choose Avatar</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '16px' }}>Select an icon avatar for your profile:</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', margin: '20px 0' }}>
-              {['👤', '🌿', '🦊', '🐱', '🦁', '🦉', '🎓', '💻', '🎯', '🚀', '☕', '🧠', '🌈', '🌸', '🍕'].map((emoji) => (
+              {AVATAR_OPTIONS.map((avatarKey) => (
                 <button
-                  key={emoji}
-                  onClick={() => handleSelectAvatar(emoji)}
+                  key={avatarKey}
+                  onClick={() => handleSelectAvatar(avatarKey)}
                   style={{
-                    fontSize: '2rem',
-                    background: user?.avatar === emoji ? 'rgba(74, 117, 89, 0.15)' : 'transparent',
-                    border: user?.avatar === emoji ? '2px solid var(--accent)' : '1px solid var(--border)',
-                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     padding: '8px',
+                    background: user?.avatar === avatarKey ? 'rgba(74, 117, 89, 0.15)' : 'transparent',
+                    border: user?.avatar === avatarKey ? '2px solid var(--accent)' : '1px solid var(--border)',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
+                    color: 'var(--text)'
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.transform = 'scale(1.15)';
@@ -562,10 +572,10 @@ export default function Settings() {
                   }}
                   onMouseOut={(e) => {
                     e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.background = user?.avatar === emoji ? 'rgba(74, 117, 89, 0.15)' : 'transparent';
+                    e.currentTarget.style.background = user?.avatar === avatarKey ? 'rgba(74, 117, 89, 0.15)' : 'transparent';
                   }}
                 >
-                  {emoji}
+                  {getAvatarIcon(avatarKey, { size: 32 })}
                 </button>
               ))}
             </div>

@@ -3,9 +3,13 @@ import { Link, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
-import { FireIcon } from '../components/Icons'
+import { FireIcon, ChartIcon, TargetIcon, TimerIcon, ZapIcon, ClockIcon, ActivityIcon, HistoryIcon, BookIcon, StarIcon, ShieldIcon, LeafIcon, EditIcon, LockIcon } from '../components/Icons'
 
-const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
+const SESSION_ICONS = [
+  <BookIcon size={20} />, <EditIcon size={20} />, <ActivityIcon size={20} />, <ClipboardIcon size={20} />, 
+  <ChartIcon size={20} />, <PaletteIcon size={20} />, <BookIcon size={20} />, <ActivityIcon size={20} />, 
+  <ZapIcon size={20} />, <TargetIcon size={20} />, <TargetIcon size={20} />, <ActivityIcon size={20} />
+]
 
 function getStoredSessions() {
   try { return JSON.parse(localStorage.getItem('focusify_sessions') || '[]') } catch(e) { return [] }
@@ -101,15 +105,15 @@ export default function Progress() {
       <>
         <Navbar />
         <main className="container narrow" style={{ textAlign: 'center', marginTop: '60px' }}>
-          <div className="card" style={{ padding: '40px 30px', boxShadow: 'var(--shadow-lg)' }}>
-            <span style={{ fontSize: '3rem', marginBottom: '20px', display: 'block' }}>🔒</span>
-            <h2 style={{ marginBottom: '12px' }}>{t('progress.lockedTitle') || 'Learning Progress Locked'}</h2>
+          <div className="card" style={{ padding: '40px 30px', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <LockIcon size={48} color="var(--text2)" />
+            <h2 style={{ marginBottom: '12px', marginTop: '20px' }}>{t('progress.lockedTitle') || 'Learning Progress Locked'}</h2>
             <p style={{ color: 'var(--text2)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '24px', maxWidth: '380px', margin: '0 auto 24px auto' }}>
               {t('progress.lockedDesc') || 'Progress analytics, study streaks, and complete history tracking are exclusive to authenticated users. Sign in or register to begin monitoring your personal progress!'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-              <Link to="/auth" className="btn-hero" style={{ padding: '10px 30px', textDecoration: 'none', display: 'inline-block', fontWeight: 600 }}>
-                🔐 {t('progress.signInBtn') || 'Sign In / Register'}
+              <Link to="/auth" className="btn-hero" style={{ padding: '10px 30px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                <LockIcon size={16} /> {t('progress.signInBtn') || 'Sign In / Register'}
               </Link>
               <Link to="/" style={{ color: 'var(--text3)', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 500 }}>
                 ← {t('progress.backToDashboard') || 'Back to Dashboard'}
@@ -183,12 +187,12 @@ export default function Progress() {
     <>
       <Navbar />
       <main className="container wide">
-        <div className="page-hdr"><h1>📊 {t('progress.title')}</h1><p>{t('progress.subtitle')}</p></div>
+        <div className="page-hdr"><h1 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ChartIcon size={28} /> {t('progress.title')}</h1><p>{t('progress.subtitle')}</p></div>
 
         <div className="subtabs">
           {['daily','weekly','stats','history'].map(tb => (
-            <button key={tb} className={`stab ${tab===tb?'active':''}`} onClick={() => setTab(tb)}>
-              {tb==='daily'?`📅 ${t('progress.dailyProgress')}`:tb==='weekly'?`📆 ${t('progress.weeklySummary')}`:tb==='stats'?`📊 ${t('progress.studyStats')}`:`🕐 ${t('progress.sessionHistory')}`}
+            <button key={tb} className={`stab ${tab===tb?'active':''}`} onClick={() => setTab(tb)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {tb==='daily'?<><ActivityIcon size={16}/> {t('progress.dailyProgress')}</>:tb==='weekly'?<><ChartIcon size={16}/> {t('progress.weeklySummary')}</>:tb==='stats'?<><BookIcon size={16}/> {t('progress.studyStats')}</>:<><HistoryIcon size={16}/> {t('progress.sessionHistory')}</>}
             </button>
           ))}
         </div>
@@ -205,22 +209,22 @@ export default function Progress() {
         {tab === 'daily' && (
           <div className="g2" style={{ alignItems: 'start' }}>
             <div className="card">
-              <div className="ctitle">🎯 {t('progress.dailyTarget').replace('{count}', TARGET)}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><TargetIcon size={20} /> {t('progress.dailyTarget').replace('{count}', TARGET)}</div>
               <div className="ring-row">
                 <svg width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" strokeWidth="8" /><circle cx="40" cy="40" r="32" fill="none" stroke="var(--accent)" strokeWidth="8" strokeDasharray="201" strokeDashoffset={dashOffset} strokeLinecap="round" transform="rotate(-90 40 40)" /><text x="40" y="45" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--accent)" fontFamily="DM Sans">{pct}%</text></svg>
                 <div className="ring-info"><h3>{todaySessions.length} / {TARGET}</h3><p>{t('progress.sessionsCompleted')}</p><small>{t('progress.targetPerDay').replace('{count}', TARGET)}</small></div>
               </div>
               <div style={{ marginTop:14, display:'flex', gap:10, flexWrap:'wrap' }}>
-                <div style={{ fontSize:'.8rem', color:'var(--text2)' }}>⏱️ {t('progress.total')}<strong style={{ color:'var(--accent)' }}>{todayTotal}{t('progress.min')}</strong></div>
-                <div style={{ fontSize:'.8rem', color:'var(--text2)' }}>⚡ {t('progress.focusAvg')}<strong style={{ color:'var(--accent)' }}>{todayAvgScore || '-'}%</strong></div>
+                <div style={{ fontSize:'.8rem', color:'var(--text2)', display: 'flex', alignItems: 'center', gap: '4px' }}><TimerIcon size={14}/> {t('progress.total')} <strong style={{ color:'var(--accent)' }}>{todayTotal}{t('progress.min')}</strong></div>
+                <div style={{ fontSize:'.8rem', color:'var(--text2)', display: 'flex', alignItems: 'center', gap: '4px' }}><ZapIcon size={14}/> {t('progress.focusAvg')} <strong style={{ color:'var(--accent)' }}>{todayAvgScore || '-'}%</strong></div>
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🕐 {t('progress.todaysSessions')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClockIcon size={20} /> {t('progress.todaysSessions')}</div>
               <div className="today-sess">
                 {todaySessions.length === 0 && (
                   <div className="ts-item" style={{ border:'1.5px dashed var(--border)', background:'transparent', opacity:.6 }}>
-                    <div className="ts-ic">⬜</div>
+                    <div className="ts-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ActivityIcon size={20} color="var(--text3)"/></div>
                     <div className="ts-info"><div className="ts-name" style={{ color:'var(--text3)' }}>{t('progress.noSessionsToday')}</div><div className="ts-meta">{t('progress.startFirst')}</div></div>
                     <Link to="/session-setup" style={{ fontSize:'.76rem', color:'var(--accent)', fontWeight:600, whiteSpace:'nowrap', textDecoration:'none' }}>{t('progress.start')}</Link>
                   </div>
@@ -237,7 +241,7 @@ export default function Progress() {
                 ))}
                 {todaySessions.length > 0 && todaySessions.length < TARGET && (
                   <div className="ts-item" style={{ border:'1.5px dashed var(--border)', background:'transparent', opacity:.6 }}>
-                    <div className="ts-ic">⬜</div>
+                    <div className="ts-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ActivityIcon size={20} color="var(--text3)"/></div>
                     <div className="ts-info"><div className="ts-name" style={{ color:'var(--text3)' }}>{t('progress.notStartedYet').replace('{count}', todaySessions.length + 1)}</div><div className="ts-meta">{t('progress.remainingTargets')}</div></div>
                     <Link to="/session-setup" style={{ fontSize:'.76rem', color:'var(--accent)', fontWeight:600, whiteSpace:'nowrap', textDecoration:'none' }}>{t('progress.start')}</Link>
                   </div>
@@ -251,7 +255,7 @@ export default function Progress() {
         {tab === 'weekly' && (
           <div className="g2">
             <div className="card">
-              <div className="ctitle">📅 {t('progress.sessionsPerDay')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ActivityIcon size={20} /> {t('progress.sessionsPerDay')}</div>
               <div className="bar-chart">
                 {weeklyBars.map((b,i) => (
                   <div key={i} className="bar-wrap"><div className={`bar ${b.cls}`} style={{ height:b.h }} data-tip={b.tip}></div><div className="bl">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}</div></div>
@@ -264,7 +268,7 @@ export default function Progress() {
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🗓️ {t('progress.learningCalendar')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HistoryIcon size={20} /> {t('progress.learningCalendar')}</div>
               <div className="hm-head"><div className="hm-dl">M</div><div className="hm-dl">T</div><div className="hm-dl">W</div><div className="hm-dl">T</div><div className="hm-dl">F</div><div className="hm-dl">S</div><div className="hm-dl">S</div></div>
               <div className="heatmap">{hmData.map((l,i) => <div key={i} className={`hm-cell hm-${l}`}></div>)}</div>
               <div className="hm-legend"><span>{t('progress.low')}</span><div className="hml" style={{ background:'var(--bg2)', border:'1px solid var(--border)' }}></div><div className="hml" style={{ background:'var(--b4)' }}></div><div className="hml" style={{ background:'var(--b3)' }}></div><div className="hml" style={{ background:'var(--b2)' }}></div><div className="hml" style={{ background:'var(--b1)' }}></div><span>{t('progress.high')}</span></div>
@@ -276,18 +280,18 @@ export default function Progress() {
         {tab === 'stats' && (
           <div className="g2">
             <div className="card">
-              <div className="ctitle">📚 {t('progress.mainStatistics')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BookIcon size={20} /> {t('progress.mainStatistics')}</div>
               <div className="stat-list">
-                {[{ic:'⏱️',n:t('progress.avgSessionDuration'),w:'78%',v:`${avgSessionDuration}'`},{ic:'🎯',n:t('progress.sessionCompletionRate'),w: completionRate + '%', v: completionRate + '%'},{ic:'🛡️',n:t('progress.distractionsPrevented'),w:'60%',v:totalDistractions + 'x'},{ic:'🌿',n:t('progress.avgFocusScore'),w: overallAvgScore + '%', v: overallAvgScore + '%'},{ic:'⏳',n:t('progress.totalLearningTime'),w:'100%',v: totalHours + 'h'},{ic:'📊',n:t('progress.totalSessions'),w:'72%',v: sessions.length}].map((s,i) => (
-                  <div key={i} className="sl-item"><div className="sl-ic">{s.ic}</div><div className="sl-info"><div className="sl-name">{s.n}</div><div className="sl-bar"><div className="sl-fill" style={{ width: typeof s.w === 'number' ? s.w + '%' : s.w }}></div></div></div><div className="sl-val">{s.v}</div></div>
+                {[{ic:<TimerIcon size={16}/>,n:t('progress.avgSessionDuration'),w:'78%',v:`${avgSessionDuration}'`},{ic:<TargetIcon size={16}/>,n:t('progress.sessionCompletionRate'),w: completionRate + '%', v: completionRate + '%'},{ic:<ShieldIcon size={16}/>,n:t('progress.distractionsPrevented'),w:'60%',v:totalDistractions + 'x'},{ic:<LeafIcon size={16}/>,n:t('progress.avgFocusScore'),w: overallAvgScore + '%', v: overallAvgScore + '%'},{ic:<ClockIcon size={16}/>,n:t('progress.totalLearningTime'),w:'100%',v: totalHours + 'h'},{ic:<ChartIcon size={16}/>,n:t('progress.totalSessions'),w:'72%',v: sessions.length}].map((s,i) => (
+                  <div key={i} className="sl-item"><div className="sl-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{s.ic}</div><div className="sl-info"><div className="sl-name">{s.n}</div><div className="sl-bar"><div className="sl-fill" style={{ width: typeof s.w === 'number' ? s.w + '%' : s.w }}></div></div></div><div className="sl-val">{s.v}</div></div>
                 ))}
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🏆 {t('progress.achievements')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><StarIcon size={20} /> {t('progress.achievements')}</div>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                {[{ic:'⭐',n:t('progress.perfectSessions'),v: sessions.filter(s => s.score === 100).length + 'x'},{ic:'🎯',n:t('progress.completedSessions'),v: sessions.filter(s => s.status === 'done').length + 'x'},{ic:'📅',n:t('progress.daysWithSessions'),v: new Set(sessions.map(s => new Date(s.endTime).toDateString())).size + ' days'},{ic:'⏳',n:t('progress.totalLearningTime'),v: totalHours + ' hours'},{ic:'📊',n:t('progress.overallFocusScore'),v: overallAvgScore + '%'},{ic:'🛡️',n:t('progress.totalDistractionsBlocked'),v: totalDistractions + 'x'}].map((a,i) => (
-                  <div key={i} className="sl-item"><div className="sl-ic">{a.ic}</div><div className="sl-info"><div className="sl-name">{a.n}</div></div><div className="sl-val">{a.v}</div></div>
+                {[{ic:<StarIcon size={16}/>,n:t('progress.perfectSessions'),v: sessions.filter(s => s.score === 100).length + 'x'},{ic:<TargetIcon size={16}/>,n:t('progress.completedSessions'),v: sessions.filter(s => s.status === 'done').length + 'x'},{ic:<ActivityIcon size={16}/>,n:t('progress.daysWithSessions'),v: new Set(sessions.map(s => new Date(s.endTime).toDateString())).size + ' days'},{ic:<ClockIcon size={16}/>,n:t('progress.totalLearningTime'),v: totalHours + ' hours'},{ic:<ChartIcon size={16}/>,n:t('progress.overallFocusScore'),v: overallAvgScore + '%'},{ic:<ShieldIcon size={16}/>,n:t('progress.totalDistractionsBlocked'),v: totalDistractions + 'x'}].map((a,i) => (
+                  <div key={i} className="sl-item"><div className="sl-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{a.ic}</div><div className="sl-info"><div className="sl-name">{a.n}</div></div><div className="sl-val">{a.v}</div></div>
                 ))}
               </div>
             </div>
@@ -297,7 +301,7 @@ export default function Progress() {
         {/* HISTORY */}
         {tab === 'history' && (
           <div className="card">
-            <div className="ctitle">🕐 {t('progress.allSessionHistory')}</div>
+            <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HistoryIcon size={20} /> {t('progress.allSessionHistory')}</div>
             <div className="hist-filter">
               {['all','done','partial','pomodoro','custom'].map(f => (
                 <button key={f} className={`hf-btn ${histFilter===f?'active':''}`} onClick={() => setHistFilter(f)}>
@@ -321,7 +325,7 @@ export default function Progress() {
                       style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', width: '100%', padding: '12px 8px', borderRadius: 'var(--radius-sm)' }}
                     >
                       <div className="hi-date">{h.date}</div>
-                      <div className="hi-ic">{h.icon}</div>
+                      <div className="hi-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{h.icon}</div>
                       <div className="hi-info" style={{ flexGrow: 1 }}>
                         <div className="hi-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {h.name}
@@ -343,14 +347,14 @@ export default function Progress() {
                         borderLeft: '3px solid var(--accent)'
                       }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px 16px' }}>
-                          <div><strong>⏱️ Duration:</strong> {h.raw.duration}m / {h.raw.totalDuration}m</div>
-                          <div><strong>🎯 Focus Score:</strong> {h.raw.score}%</div>
-                          <div><strong>✏️ Type:</strong> {h.raw.type}</div>
-                          <div><strong>🌿 Ambience:</strong> {h.raw.ambience}</div>
-                          <div><strong>🛡️ Distractions prevented:</strong> {h.raw.distractions}x</div>
-                          <div><strong>🔒 Focus Mode:</strong> {h.raw.focusMode ? 'Active' : 'Inactive'}</div>
-                          <div><strong>🕐 Start:</strong> {h.raw.startTime ? new Date(h.raw.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
-                          <div><strong>⌛ End:</strong> {h.raw.endTime ? new Date(h.raw.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><TimerIcon size={14}/> <strong>Duration:</strong> {h.raw.duration}m / {h.raw.totalDuration}m</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><TargetIcon size={14}/> <strong>Focus Score:</strong> {h.raw.score}%</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><EditIcon size={14}/> <strong>Type:</strong> {h.raw.type}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><LeafIcon size={14}/> <strong>Ambience:</strong> {h.raw.ambience}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldIcon size={14}/> <strong>Distractions:</strong> {h.raw.distractions}x</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><LockIcon size={14}/> <strong>Focus Mode:</strong> {h.raw.focusMode ? 'Active' : 'Inactive'}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ClockIcon size={14}/> <strong>Start:</strong> {h.raw.startTime ? new Date(h.raw.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><HistoryIcon size={14}/> <strong>End:</strong> {h.raw.endTime ? new Date(h.raw.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
                         </div>
                       </div>
                     )}
@@ -362,7 +366,7 @@ export default function Progress() {
         )}
 
         {!loading && !isAuthenticated && (
-          <div className="login-hint">🔒 {t('progress.fullHistoryLogin')}<Link to="/auth">{t('progress.signInNow')}</Link>{t('progress.accessFeatures')}</div>
+          <div className="login-hint" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><LockIcon size={16} /> {t('progress.fullHistoryLogin')}<Link to="/auth">{t('progress.signInNow')}</Link>{t('progress.accessFeatures')}</div>
         )}
       </main>
     </>

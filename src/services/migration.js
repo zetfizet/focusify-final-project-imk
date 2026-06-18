@@ -19,14 +19,14 @@ export const migrateLocalDataToBackend = async () => {
       return { success: true, sessionsMigrated: 0 }
     }
 
-    console.log(`📤 Migrating ${localSessions.length} local sessions to backend...`)
+    console.log(`[Sync] Migrating ${localSessions.length} local sessions to backend...`)
 
     try {
       // Upload sessions to backend
       const response = await sessionsAPI.bulkCreate(localSessions)
       const migratedSessions = response.data.sessions || []
 
-      console.log(`✅ Successfully migrated ${migratedSessions.length} sessions`)
+      console.log(`[Success] Successfully migrated ${migratedSessions.length} sessions`)
 
       // Store migrated sessions back to localStorage for consistency
       localStorage.setItem('focusify_sessions', JSON.stringify(migratedSessions))
@@ -59,7 +59,7 @@ export const migrateLocalDataToBackend = async () => {
  */
 export const syncBackendToLocalStorage = async () => {
   try {
-    console.log('📥 Syncing backend sessions to localStorage...')
+    console.log('[Sync] Syncing backend sessions to localStorage...')
 
     const response = await sessionsAPI.getAll()
     const backendSessions = response.data || []
@@ -67,7 +67,7 @@ export const syncBackendToLocalStorage = async () => {
     // Store in localStorage
     localStorage.setItem('focusify_sessions', JSON.stringify(backendSessions))
 
-    console.log(`✅ Synced ${backendSessions.length} sessions from backend`)
+    console.log(`[Success] Synced ${backendSessions.length} sessions from backend`)
 
     return {
       success: true,
@@ -88,7 +88,7 @@ export const syncBackendToLocalStorage = async () => {
  */
 export const performFullDataSync = async () => {
   try {
-    console.log('🔄 Starting full data sync...')
+    console.log('[Sync] Starting full data sync...')
 
     // Step 1: Migrate local sessions to backend
     const migrationResult = await migrateLocalDataToBackend()

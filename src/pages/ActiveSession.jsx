@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
-import { PlayIcon, PauseIcon, StopIcon } from '../components/Icons'
+import { PlayIcon, PauseIcon, StopIcon, TomatoIcon, EditIcon, BookIcon, CheckIcon, ShieldIcon, VolumeXIcon, ChartIcon, AlertTriangleIcon, CoffeeIcon, SettingsIcon, LightbulbIcon, LeafIcon, StarIcon } from '../components/Icons'
 
 const CIRC = 2 * Math.PI * 100
 
@@ -11,7 +11,7 @@ function getSessionConfig() {
     const raw = localStorage.getItem('focusify_active_session')
     if (raw) return JSON.parse(raw)
   } catch (e) {}
-  return { name: 'Unnamed Session', duration: 25, type: 'Pomodoro', ambience: '🌿 Forest', focusMode: true, startTime: new Date().toISOString() }
+  return { name: 'Unnamed Session', duration: 25, type: 'Pomodoro', ambience: 'Forest', focusMode: true, startTime: new Date().toISOString() }
 }
 
 import { sessionsAPI } from '../services/api'
@@ -65,13 +65,12 @@ export default function ActiveSession() {
   }, [])
 
   const getAmbienceVideoId = (amb) => {
-    if (!amb) return null
-    if (amb.includes('🌧️')) return 'mPZkdNFkNps'
-    if (amb.includes('🌿')) return 'xNN7iTA57jM'
-    if (amb.includes('☕')) return 'gaGrHUekGrc'
-    if (amb.includes('🌊')) return 'Nep1qytq9JM'
-    if (amb.includes('🔥')) return 'L_LUpnjgPso'
-    if (amb.includes('🎵')) return 'jfKfPfyJRdk' // Lofi Girl
+    if (amb.includes('Rain') || amb.includes('Hujan')) return 'mPZkdNFkNps'
+    if (amb.includes('Forest') || amb.includes('Hutan')) return 'xNN7iTA57jM'
+    if (amb.includes('Cafe') || amb.includes('Kafe')) return 'gaGrHUekGrc'
+    if (amb.includes('Ocean') || amb.includes('Pantai')) return 'Nep1qytq9JM'
+    if (amb.includes('Fire') || amb.includes('Api')) return 'L_LUpnjgPso'
+    if (amb.includes('Lo-fi')) return 'jfKfPfyJRdk' // Lofi Girl
     return null
   }
   const videoId = getAmbienceVideoId(config.ambience)
@@ -102,7 +101,6 @@ export default function ActiveSession() {
     const h = document.documentElement
     const d = h.getAttribute('data-theme') === 'dark'
     h.setAttribute('data-theme', d ? 'light' : 'dark')
-    document.getElementById('thbtn').textContent = d ? '🌿' : '🌙'
   }
 
   const fmt = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')
@@ -235,7 +233,7 @@ export default function ActiveSession() {
             const showBreakAlert = localStorage.getItem('focusify_break_reminder') !== 'false'
             if (showBreakAlert) {
               if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(t('active.sessionCompleted') || 'Session Complete! 🍅', {
+                new Notification(t('active.sessionCompleted') || 'Session Complete!', {
                   body: t('setup.breakReminderDesc') || "Great job! It's time to take a break.",
                   icon: '/favicon.ico'
                 })
@@ -305,7 +303,7 @@ export default function ActiveSession() {
         setShowDistract(true)
 
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification(t('active.distractTitle') || 'Stay focused! 🎯', {
+          new Notification(t('active.distractTitle') || 'Stay focused!', {
             body: t('active.distractionDesc') || 'You left the learning tab. Your focus score may decrease.',
             icon: '/favicon.ico'
           })
@@ -380,14 +378,14 @@ export default function ActiveSession() {
       <nav>
         <Link className="nav-logo" to="/"><span className="dot"></span>Focusify</Link>
         <div className="live-badge"><div className="pulse"></div>{t('nav.activeSession') || 'Active Session'}</div>
-        <button className="theme-btn" onClick={toggleTheme} id="thbtn">🌿</button>
+        <button className="theme-btn" onClick={toggleTheme} id="thbtn" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LeafIcon size={18} /></button>
       </nav>
 
       <main className="container xnarrow">
         <div className="timer-wrap">
           <div className="sess-label">
-            {config.type === 'Pomodoro' ? '🍅' : '✏️'} {config.type} · {config.duration} {t('setup.minutes')}
-            {config.name !== 'Unnamed Session' && <span style={{ display: 'block', marginTop: 6, fontSize: '.85rem', letterSpacing: '.02em', textTransform: 'none', wordBreak: 'break-word', lineHeight: 1.4 }}>📖 {config.name}</span>}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>{config.type === 'Pomodoro' ? <TomatoIcon size={16}/> : <EditIcon size={16}/>} {config.type} · {config.duration} {t('setup.minutes')}</span>
+            {config.name !== 'Unnamed Session' && <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: 6, fontSize: '.85rem', letterSpacing: '.02em', textTransform: 'none', wordBreak: 'break-word', lineHeight: 1.4 }}><BookIcon size={14}/> {config.name}</span>}
           </div>
           <div className="ring-outer">
             <svg width="230" height="230" viewBox="0 0 230 230">
@@ -401,9 +399,9 @@ export default function ActiveSession() {
           </div>
 
           <div className="status-row">
-            <div className={`sbadge ${paused ? 'paused' : 'running'}`}>{finished ? `✅ ${t('dashboard.completed')}` : paused ? <><PauseIcon size={12}/> {t('active.paused') || 'Paused'}</> : `● ${t('active.running') || 'Running'}`}</div>
+            <div className={`sbadge ${paused ? 'paused' : 'running'}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{finished ? <><CheckIcon size={12} /> {t('dashboard.completed')}</> : paused ? <><PauseIcon size={12}/> {t('active.paused') || 'Paused'}</> : `● ${t('active.running') || 'Running'}`}</div>
             <div className="info-pill">{config.ambience}</div>
-            <div className="info-pill">{focusMode ? `🛡️ ${t('active.fmOn') || 'Focus Mode ON'}` : `🛡️ ${t('active.fmOff') || 'Focus Mode OFF'}`}</div>
+            <div className="info-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldIcon size={12} /> {focusMode ? (t('active.fmOn') || 'Focus Mode ON') : (t('active.fmOff') || 'Focus Mode OFF')}</div>
           </div>
 
           <div className="controls">
@@ -427,11 +425,11 @@ export default function ActiveSession() {
               border: '1px solid var(--border)'
             }}>
               <span 
-                style={{ fontSize: '1.1rem', cursor: 'pointer', userSelect: 'none' }} 
+                style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center' }} 
                 onClick={() => setAmbienceOn(!ambienceOn)}
                 title={ambienceOn ? "Mute" : "Unmute"}
               >
-                {ambienceOn ? '🔊' : '🔇'}
+                {ambienceOn ? <StarIcon size={18} /> : <VolumeXIcon size={18} />}
               </span>
               <input 
                 type="range" 
@@ -458,7 +456,7 @@ export default function ActiveSession() {
 
         {/* Progress bar */}
         <div className="card" style={{ marginBottom: 14 }}>
-          <div className="ctitle">📊 {t('active.sessionProgress') || 'Session Progress'}</div>
+          <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ChartIcon size={20} /> {t('active.sessionProgress') || 'Session Progress'}</div>
           <div className="pb-row">
             <div className="pb-labels"><span>{t('active.elapsedTime') || 'Elapsed time'}</span><span>{pct}%</span></div>
             <div className="pb"><div className="pb-fill" style={{ width: pct + '%' }}></div></div>
@@ -475,9 +473,9 @@ export default function ActiveSession() {
       {/* DISTRACTION OVERLAY */}
       <div className={`overlay ${showDistract ? 'show' : ''}`}>
         <div className="ov-card">
-          <span className="ov-icon">🚨</span>
+          <span className="ov-icon" style={{ display: 'flex', justifyContent: 'center' }}><AlertTriangleIcon size={48} color="var(--danger)" /></span>
           <h2>{t('active.distractTitle') || 'Stay focused!'}</h2>
-          <p>{t('active.distractDesc') || 'You tried to switch tabs, windows, or leave the session. Focus Mode is active to keep you concentrated on your learning. Complete your session and achieve your goal! 💪'}</p>
+          <p>{t('active.distractDesc') || 'You tried to switch tabs, windows, or leave the session. Focus Mode is active to keep you concentrated on your learning. Complete your session and achieve your goal!'}</p>
           <button className="btn-back" onClick={() => setShowDistract(false)}>⬅ {t('active.backToSession') || 'Back to Session'}</button>
         </div>
       </div>
@@ -497,7 +495,7 @@ export default function ActiveSession() {
       {/* BREAK MODAL */}
       <div className={`stop-overlay ${showBreakModal ? 'show' : ''}`}>
         <div className="stop-card">
-          <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>☕ {t('active.sessionCompleted') || 'Session Complete!'}</h2>
+          <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><CoffeeIcon size={24} /> {t('active.sessionCompleted') || 'Session Complete!'}</h2>
           <p>{t('setup.breakReminderDesc') || "Great job! It's time to take a break. Stand up, stretch, and get some water."}</p>
           <div className="stop-btns" style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
             <button className="btn-confirm-stop" style={{ width: '100%', background: 'var(--accent)', color: 'white' }} onClick={() => navigate('/session-summary')}>
@@ -512,7 +510,7 @@ export default function ActiveSession() {
         <div className="stop-overlay show" style={{ zIndex: 3000 }}>
           <div className="stop-card" style={{ maxWidth: '450px', width: '90%', textAlign: 'left', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>🎛️ {t('active.fcpTitle') || 'Focus Control Panel'}</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><SettingsIcon size={18} /> {t('active.fcpTitle') || 'Focus Control Panel'}</h3>
               <button 
                 onClick={togglePause} 
                 style={{ 
@@ -592,8 +590,8 @@ export default function ActiveSession() {
               </div>
             </div>
 
-            <div style={{ marginTop: '20px', padding: '10px', background: 'var(--bg2)', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text2)', borderLeft: '3px solid var(--accent)' }}>
-              💡 {t('active.fcpNote') || 'Session paused. Press Play to continue or Stop to end the session.'}
+            <div style={{ marginTop: '20px', padding: '10px', background: 'var(--bg2)', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text2)', borderLeft: '3px solid var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <LightbulbIcon size={14} /> {t('active.fcpNote') || 'Session paused. Press Play to continue or Stop to end the session.'}
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>

@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
+import { TargetIcon } from '../components/Icons'
 import '../styles/auth.css'
 
 const AuthPage = () => {
@@ -114,7 +115,7 @@ const AuthPage = () => {
           </div>
         )}
         <div className="auth-header">
-          <h1>🎯 Focusify</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><TargetIcon size={32} /> Focusify</h1>
           <h2>{isLogin ? t('auth.welcomeBack') : t('auth.getStarted')}</h2>
           <p>{isLogin ? t('auth.loginToAccount') : t('auth.createAccount')}</p>
         </div>

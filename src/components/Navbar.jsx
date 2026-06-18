@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useContext, useState, useRef, useEffect } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
-import { SettingsIcon, LogOutIcon, MoonIcon, SunIcon } from './Icons'
+import { SettingsIcon, LogOutIcon, MoonIcon, SunIcon, getAvatarIcon } from './Icons'
 
 export default function Navbar({ showNavLinks = true, showLoginBtn = true, showLiveBadge = false, children }) {
   const location = useLocation()
@@ -74,8 +74,8 @@ export default function Navbar({ showNavLinks = true, showLoginBtn = true, showL
         )}
         {isAuthenticated && (
           <div className="profile-dropdown-container" ref={dropdownRef}>
-            <button className="profile-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ fontSize: '1.25rem' }}>
-              {user?.avatar || (user?.username ? user.username.charAt(0).toUpperCase() : 'U')}
+            <button className="profile-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {user?.avatar && user.avatar.length > 2 ? getAvatarIcon(user.avatar, { size: 20 }) : (user?.username ? user.username.charAt(0).toUpperCase() : 'U')}
             </button>
             {isDropdownOpen && (
               <div className="profile-dropdown">

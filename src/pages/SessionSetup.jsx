@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
-import { PlayIcon } from '../components/Icons'
+import { PlayIcon, SettingsIcon, EditIcon, TimerIcon, TomatoIcon, CoffeeIcon, MusicIcon, VolumeXIcon, ShieldIcon, BookIcon, CheckIcon, XIcon, AlertTriangleIcon, CloudRainIcon, LeafIcon, WavesIcon, FireIcon } from '../components/Icons'
 
 export default function SessionSetup() {
   const navigate = useNavigate()
@@ -38,8 +38,8 @@ export default function SessionSetup() {
   const [ambTxt, setAmbTxt] = useState(() => {
     try {
       const draft = JSON.parse(localStorage.getItem('focusify_setup_draft') || '{}')
-      return draft.ambTxt || '🌿 Forest'
-    } catch(e) { return '🌿 Forest' }
+      return draft.ambTxt || 'Forest'
+    } catch(e) { return 'Forest' }
   })
   const [activeAmb, setActiveAmb] = useState(() => {
     try {
@@ -96,12 +96,12 @@ export default function SessionSetup() {
   ]
 
   const ambiences = [
-    { icon: '🌧️', label: t('setup.rain') || 'Rain', txt: `🌧️ ${t('setup.rain') || 'Rain'}` },
-    { icon: '🌿', label: t('setup.forest') || 'Forest', txt: `🌿 ${t('setup.forest') || 'Forest'}` },
-    { icon: '☕', label: t('setup.cafe') || 'Cafe', txt: `☕ ${t('setup.cafe') || 'Cafe'}` },
-    { icon: '🌊', label: t('setup.beach') || 'Ocean', txt: `🌊 ${t('setup.beach') || 'Ocean'}` },
-    { icon: '🔥', label: t('setup.fire') || 'Fire', txt: `🔥 ${t('setup.fire') || 'Fire'}` },
-    { icon: '🎵', label: t('setup.lofi') || 'Lo-fi', txt: `🎵 ${t('setup.lofi') || 'Lo-fi'}` },
+    { icon: <CloudRainIcon size={18} />, label: t('setup.rain') || 'Rain', txt: t('setup.rain') || 'Rain' },
+    { icon: <LeafIcon size={18} />, label: t('setup.forest') || 'Forest', txt: t('setup.forest') || 'Forest' },
+    { icon: <CoffeeIcon size={18} />, label: t('setup.cafe') || 'Cafe', txt: t('setup.cafe') || 'Cafe' },
+    { icon: <WavesIcon size={18} />, label: t('setup.beach') || 'Ocean', txt: t('setup.beach') || 'Ocean' },
+    { icon: <FireIcon size={18} />, label: t('setup.fire') || 'Fire', txt: t('setup.fire') || 'Fire' },
+    { icon: <MusicIcon size={18} />, label: t('setup.lofi') || 'Lo-fi', txt: t('setup.lofi') || 'Lo-fi' },
   ]
 
   function handleSetMode(m) {
@@ -126,7 +126,7 @@ export default function SessionSetup() {
 
   function handleAmbNone() {
     setActiveAmb(-1)
-    setAmbTxt(`🤫 ${t('setup.silence') || 'Silence'}`)
+    setAmbTxt(t('setup.silence') || 'Silence')
     setCurrentStep(2)
   }
 
@@ -141,7 +141,7 @@ export default function SessionSetup() {
       <Navbar />
       <main className="container narrow">
         <div className="page-hdr">
-          <h1>⚙️ {t('setup.title')}</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><SettingsIcon size={28} /> {t('setup.title')}</h1>
           <p>{t('setup.subtitle')}</p>
         </div>
 
@@ -154,7 +154,7 @@ export default function SessionSetup() {
 
         {/* 0. SESSION NAME */}
         <div className="card">
-          <div className="sec-lbl">📝 {t('setup.sessionName')} <span style={{ color: '#ff4d4f', marginLeft: 4 }}>*</span></div>
+          <div className="sec-lbl" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><EditIcon size={18} /> {t('setup.sessionName')} <span style={{ color: '#ff4d4f', marginLeft: 4 }}>*</span></div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <input
               ref={nameInputRef}
@@ -177,10 +177,10 @@ export default function SessionSetup() {
 
         {/* 1. SELECT DURATION */}
         <div className="card">
-          <div className="sec-lbl">⏱️ 1. {t('setup.selectDuration')}</div>
+          <div className="sec-lbl" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TimerIcon size={18} /> 1. {t('setup.selectDuration')}</div>
           <div className="dtabs">
-            <div className={`dtab ${mode === 'pomo' ? 'active' : ''}`} onClick={() => handleSetMode('pomo')}><div className="dt">🍅 {t('setup.pomodoro')}</div><div className="dl">{t('setup.pomodoroDesc')}</div></div>
-            <div className={`dtab ${mode === 'custom' ? 'active' : ''}`} onClick={() => handleSetMode('custom')}><div className="dt">✏️ {t('setup.customDuration')}</div><div className="dl">{t('setup.customDesc')}</div></div>
+            <div className={`dtab ${mode === 'pomo' ? 'active' : ''}`} onClick={() => handleSetMode('pomo')}><div className="dt" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><TomatoIcon size={16} /> {t('setup.pomodoro')}</div><div className="dl">{t('setup.pomodoroDesc')}</div></div>
+            <div className={`dtab ${mode === 'custom' ? 'active' : ''}`} onClick={() => handleSetMode('custom')}><div className="dt" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><EditIcon size={16} /> {t('setup.customDuration')}</div><div className="dl">{t('setup.customDesc')}</div></div>
           </div>
 
           {mode === 'pomo' && (
@@ -191,7 +191,7 @@ export default function SessionSetup() {
                   <div key={i} className={`pomo-btn ${activePomo === i ? 'active' : ''}`} onClick={() => handlePomo(i)}><div className="pm">{p.min}&apos;</div><div className="pl">{p.label}</div></div>
                 ))}
               </div>
-              <div className="pomo-break">☕ {t('setup.break')}: <strong>{breakMin} {t('setup.minutes')}</strong> {t('setup.breakDesc')}</div>
+              <div className="pomo-break" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CoffeeIcon size={16} /> {t('setup.break')}: <strong>{breakMin} {t('setup.minutes')}</strong> {t('setup.breakDesc')}</div>
             </div>
           )}
 
@@ -206,29 +206,29 @@ export default function SessionSetup() {
 
         {/* 2. AMBIENCE */}
         <div className="card">
-          <div className="sec-lbl">🎵 2. {t('setup.ambienceSettings')}</div>
+          <div className="sec-lbl" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MusicIcon size={18} /> 2. {t('setup.ambienceSettings')}</div>
           <div className="amb-grid">
             {ambiences.map((a, i) => (
               <div key={i} className={`amb-btn ${activeAmb === i ? 'active' : ''}`} onClick={() => handleAmb(i)}><span className="ai">{a.icon}</span><span className="al">{a.label}</span></div>
             ))}
-            <div className={`amb-none ${activeAmb === -1 ? 'active' : ''}`} onClick={handleAmbNone}>🤫 {t('setup.noSound')}</div>
+            <div className={`amb-none ${activeAmb === -1 ? 'active' : ''}`} onClick={handleAmbNone} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><VolumeXIcon size={18} /> {t('setup.noSound')}</div>
           </div>
         </div>
 
         {/* 3. FOCUS MODE */}
         <div className="card">
-          <div className="sec-lbl">🛡️ 3. {t('setup.focusModeToggle')}</div>
+          <div className="sec-lbl" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldIcon size={18} /> 3. {t('setup.focusModeToggle')}</div>
           <div className="fmtog-row"><div className="fti"><div className="ftl">{t('setup.focusMode')}</div><div className="fts">{t('setup.focusModeDesc')}</div></div><label className="tog"><input type="checkbox" checked={fmOn} onChange={e => { setFmOn(e.target.checked); setCurrentStep(3) }} /><span className="sldr"></span></label></div>
           <div className="fmtog-row"><div className="fti"><div className="ftl">{t('setup.breakReminder')}</div><div className="fts">{t('setup.breakReminderDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
           <div className="fmtog-row"><div className="fti"><div className="ftl">{t('setup.distractionWarning')}</div><div className="fts">{t('setup.distractionWarningDesc')}</div></div><label className="tog"><input type="checkbox" defaultChecked /><span className="sldr"></span></label></div>
         </div>
 
         <div className="sum-strip">
-          {sessionName && <div className="ss-i"><div className="ssl">{t('setup.sumSession')}</div><div className="ssv">📖 {sessionName}</div></div>}
+          {sessionName && <div className="ss-i"><div className="ssl">{t('setup.sumSession')}</div><div className="ssv" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><BookIcon size={14} /> {sessionName}</div></div>}
           <div className="ss-i"><div className="ssl">{t('setup.sumDuration')}</div><div className="ssv">{mode === 'custom' ? customVal : dur} {t('setup.minutes')}</div></div>
-          <div className="ss-i"><div className="ssl">{t('setup.sumType')}</div><div className="ssv">{mode === 'pomo' ? `🍅 ${t('setup.pomodoro')}` : `✏️ ${t('setup.customDuration')}`}</div></div>
-          <div className="ss-i"><div className="ssl">{t('setup.sumAmbience')}</div><div className="ssv">{ambTxt}</div></div>
-          <div className="ss-i"><div className="ssl">{t('setup.sumFocusMode')}</div><div className="ssv">{fmOn ? `✅ ${t('setup.active')}` : `❌ ${t('setup.inactive')}`}</div></div>
+          <div className="ss-i"><div className="ssl">{t('setup.sumType')}</div><div className="ssv" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{mode === 'pomo' ? <><TomatoIcon size={14} /> {t('setup.pomodoro')}</> : <><EditIcon size={14} /> {t('setup.customDuration')}</>}</div></div>
+          <div className="ss-i"><div className="ssl">{t('setup.sumAmbience')}</div><div className="ssv" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{activeAmb !== -1 ? ambiences[activeAmb].icon : <VolumeXIcon size={14} />} {ambTxt}</div></div>
+          <div className="ss-i"><div className="ssl">{t('setup.sumFocusMode')}</div><div className="ssv" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>{fmOn ? <><CheckIcon size={14} /> {t('setup.active')}</> : <><XIcon size={14} /> {t('setup.inactive')}</>}</div></div>
         </div>
 
         <button className="start-btn" onClick={() => {
@@ -260,7 +260,7 @@ export default function SessionSetup() {
       </main>
       {toast.show && (
         <div className="toast-notification">
-          <span>⚠️</span>
+          <span style={{ display: 'flex', alignItems: 'center' }}><AlertTriangleIcon size={18} /></span>
           <span>{toast.message}</span>
         </div>
       )}

@@ -3,14 +3,15 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
-import { FireIcon, PlayIcon, SettingsIcon } from '../components/Icons'
+import { FireIcon, PlayIcon, SettingsIcon, SproutIcon, TargetIcon, ChartIcon, BookIcon, HistoryIcon, MusicIcon, CloudRainIcon, LeafIcon, CoffeeIcon, WavesIcon, VolumeXIcon, ZapIcon, ShieldIcon, ActivityIcon, EditIcon, LightbulbIcon, StarIcon, ClipboardIcon } from '../components/Icons'
 
-const SESSION_ICONS = ['📖','✍️','💻','📝','🔢','🎨','📚','🖥️','🧪','📐','🎯','🌐']
+const SESSION_ICONS = [BookIcon, EditIcon, ChartIcon, TargetIcon, ActivityIcon, LightbulbIcon, StarIcon, ClipboardIcon]
 
 function getRandomIcon(name) {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i)
-  return SESSION_ICONS[Math.abs(hash) % SESSION_ICONS.length]
+  const IconComponent = SESSION_ICONS[Math.abs(hash) % SESSION_ICONS.length]
+  return <IconComponent size={20} />
 }
 
 function getStoredSessions() {
@@ -140,12 +141,12 @@ export default function Dashboard() {
           <div className="hero-text">
             <h1>
               {isAuthenticated && user ? `${t('dashboard.welcome') || 'Welcome back'}, ${user.username || user.email.split('@')[0]}!` : (t('dashboard.welcome') || 'Welcome') }
-              <br /><em>Focusify</em> 🌱
+              <br /><em>Focusify</em> <SproutIcon size={32} style={{ color: 'var(--accent)', verticalAlign: 'middle' }} />
             </h1>
             <p>{t('dashboard.subtitle')}</p>
             <div className="hero-cta">
               <Link to="/session-setup" className="btn-hero" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><PlayIcon size={16}/> {t('dashboard.startFocus')}</Link>
-              <Link to="/progress" className="btn-hero-ghost">📊 {t('dashboard.viewProgress')}</Link>
+              <Link to="/progress" className="btn-hero-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ChartIcon size={16} /> {t('dashboard.viewProgress')}</Link>
             </div>
           </div>
           <div className="hero-circles">
@@ -166,7 +167,7 @@ export default function Dashboard() {
         {/* Progress + Streak */}
         <div className="g2">
           <div className="card">
-            <div className="ctitle">🎯 {t('dashboard.progressOverview')}</div>
+            <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><TargetIcon size={20} /> {t('dashboard.progressOverview')}</div>
             <div className="ring-row">
               <svg width="78" height="78" viewBox="0 0 78 78">
                 <circle cx="39" cy="39" r="30" fill="none" stroke="var(--border)" strokeWidth="8" />
@@ -180,16 +181,16 @@ export default function Dashboard() {
               </div>
             </div>
             <div style={{ marginTop: 14 }}>
-              <Link to="/progress#daily" className="prog-link"><span className="pl-l">📅 {t('dashboard.dailyProgress')}</span><span className="pl-r">{t('dashboard.today')}</span><span className="arrow">›</span></Link>
-              <Link to="/progress#weekly" className="prog-link"><span className="pl-l">📆 {t('dashboard.weeklySummary')}</span><span className="pl-r">{t('dashboard.thisWeekSummary')}</span><span className="arrow">›</span></Link>
-              <Link to="/progress#stats" className="prog-link"><span className="pl-l">📊 {t('dashboard.studyStats')}</span><span className="pl-r">{t('dashboard.fullStats')}</span><span className="arrow">›</span></Link>
-              <Link to="/progress#history" className="prog-link" style={{ marginBottom: 0 }}><span className="pl-l">🕐 {t('dashboard.sessionHistory')}</span><span className="pl-r">{t('dashboard.allHistory')}</span><span className="arrow">›</span></Link>
+              <Link to="/progress#daily" className="prog-link"><span className="pl-l" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><BookIcon size={16} /> {t('dashboard.dailyProgress')}</span><span className="pl-r">{t('dashboard.today')}</span><span className="arrow">›</span></Link>
+              <Link to="/progress#weekly" className="prog-link"><span className="pl-l" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><BookIcon size={16} /> {t('dashboard.weeklySummary')}</span><span className="pl-r">{t('dashboard.thisWeekSummary')}</span><span className="arrow">›</span></Link>
+              <Link to="/progress#stats" className="prog-link"><span className="pl-l" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ChartIcon size={16} /> {t('dashboard.studyStats')}</span><span className="pl-r">{t('dashboard.fullStats')}</span><span className="arrow">›</span></Link>
+              <Link to="/progress#history" className="prog-link" style={{ marginBottom: 0 }}><span className="pl-l" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><HistoryIcon size={16} /> {t('dashboard.sessionHistory')}</span><span className="pl-r">{t('dashboard.allHistory')}</span><span className="arrow">›</span></Link>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div className="card">
-              <div className="ctitle">🗓️ {t('dashboard.thisWeekStreak')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HistoryIcon size={20} /> {t('dashboard.thisWeekStreak')}</div>
               <div className="streak-row">
                 {streakDays.map((day, idx) => (
                   <div key={idx} className={`sd ${day.isOk ? 'ok' : ''}`}>
@@ -200,14 +201,14 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="card">
-              <div className="ctitle">🎵 {t('dashboard.activeAmbience')}</div>
+              <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MusicIcon size={20} /> {t('dashboard.activeAmbience')}</div>
               <div className="amb-grid">
-                <div className="amb-btn active" onClick={pickAmb}><span className="ai">🌧️</span><span className="al">{t('setup.rain') || 'Rain'}</span></div>
-                <div className="amb-btn" onClick={pickAmb}><span className="ai">🌿</span><span className="al">{t('setup.forest') || 'Forest'}</span></div>
-                <div className="amb-btn" onClick={pickAmb}><span className="ai">☕</span><span className="al">{t('setup.cafe') || 'Cafe'}</span></div>
-                <div className="amb-btn" onClick={pickAmb}><span className="ai">🌊</span><span className="al">{t('setup.beach') || 'Beach'}</span></div>
-                <div className="amb-btn" onClick={pickAmb}><span className="ai">🔥</span><span className="al">{t('setup.fire') || 'Fire'}</span></div>
-                <div className="amb-btn" onClick={pickAmb}><span className="ai">🤫</span><span className="al">{t('setup.silence') || 'Silent'}</span></div>
+                <div className="amb-btn active" onClick={pickAmb}><span className="ai"><CloudRainIcon size={24}/></span><span className="al">{t('setup.rain') || 'Rain'}</span></div>
+                <div className="amb-btn" onClick={pickAmb}><span className="ai"><LeafIcon size={24}/></span><span className="al">{t('setup.forest') || 'Forest'}</span></div>
+                <div className="amb-btn" onClick={pickAmb}><span className="ai"><CoffeeIcon size={24}/></span><span className="al">{t('setup.cafe') || 'Cafe'}</span></div>
+                <div className="amb-btn" onClick={pickAmb}><span className="ai"><WavesIcon size={24}/></span><span className="al">{t('setup.beach') || 'Beach'}</span></div>
+                <div className="amb-btn" onClick={pickAmb}><span className="ai"><FireIcon size={24}/></span><span className="al">{t('setup.fire') || 'Fire'}</span></div>
+                <div className="amb-btn" onClick={pickAmb}><span className="ai"><VolumeXIcon size={24}/></span><span className="al">{t('setup.silence') || 'Silent'}</span></div>
               </div>
             </div>
           </div>
@@ -216,7 +217,7 @@ export default function Dashboard() {
         {/* Recent Sessions + Focus Settings */}
         <div className="g2">
           <div className="card">
-            <div className="ctitle">🕐 {t('dashboard.recentSessions')}</div>
+            <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HistoryIcon size={20} /> {t('dashboard.recentSessions')}</div>
             <div className="sess-list">
               {recentSessions.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text2)', fontSize: '.9rem' }}>
@@ -239,7 +240,7 @@ export default function Dashboard() {
           </div>
 
           <div className="card">
-            <div className="ctitle">⚡ {t('dashboard.focusSettings')}</div>
+            <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ZapIcon size={20} /> {t('dashboard.focusSettings')}</div>
             <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.focusMode')}</div><div className="ts">{t('dashboard.focusModeDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbFocusMode} onChange={(e) => { setDbFocusMode(e.target.checked); localStorage.setItem('focusify_default_focus_mode', e.target.checked); }} /><span className="sldr"></span></label></div>
             <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.restReminder')}</div><div className="ts">{t('dashboard.restReminderDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbRestReminder} onChange={(e) => { setDbRestReminder(e.target.checked); localStorage.setItem('focusify_break_reminder', e.target.checked); }} /><span className="sldr"></span></label></div>
             <div className="trow"><div className="tinfo"><div className="tl">{t('dashboard.distractionWarning')}</div><div className="ts">{t('dashboard.distractionWarningDesc')}</div></div><label className="tog"><input type="checkbox" checked={dbDistractionWarning} onChange={(e) => { setDbDistractionWarning(e.target.checked); localStorage.setItem('focusify_distraction_warning', e.target.checked); }} /><span className="sldr"></span></label></div>
@@ -249,7 +250,7 @@ export default function Dashboard() {
         </div>
 
         {!loading && !isAuthenticated && (
-          <div className="login-hint">🔒 {t('dashboard.saveProgressDesc')} <Link to="/auth">{t('dashboard.signInLink')}</Link></div>
+          <div className="login-hint" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><ShieldIcon size={16} /> <span>{t('dashboard.saveProgressDesc')} <Link to="/auth">{t('dashboard.signInLink')}</Link></span></div>
         )}
       </main>
     </>

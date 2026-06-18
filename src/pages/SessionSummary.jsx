@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useAuth } from '../hooks/useAuth'
 import { performFullDataSync } from '../services/migration'
-import { FireIcon } from '../components/Icons'
+import { FireIcon, LeafIcon, TimerIcon, CheckIcon, AlertTriangleIcon, TomatoIcon, EditIcon, ShieldIcon, ClipboardIcon, ChartIcon, TargetIcon, StarIcon, LightbulbIcon, SaveIcon, LockIcon, PlayIcon, HomeIcon } from '../components/Icons'
 
 export default function SessionSummary() {
   const navigate = useNavigate()
@@ -12,6 +12,7 @@ export default function SessionSummary() {
   const [allSessions, setAllSessions] = useState([])
   const { t } = useLanguage()
   const { isAuthenticated, loading } = useAuth()
+  const [isDark, setIsDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark')
   const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
@@ -94,26 +95,26 @@ export default function SessionSummary() {
     const h = document.documentElement
     const d = h.getAttribute('data-theme') === 'dark'
     h.setAttribute('data-theme', d ? 'light' : 'dark')
-    document.getElementById('thbtn').textContent = d ? '🌿' : '🌙'
+    setIsDark(!d)
   }
 
   return (
     <>
       <nav>
         <Link className="nav-logo" to="/"><span className="dot"></span>Focusify</Link>
-        <button className="theme-btn" onClick={toggleTheme} id="thbtn">🌿</button>
+        <button className="theme-btn" onClick={toggleTheme} id="thbtn" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{isDark ? <MoonIcon size={18} /> : <LeafIcon size={18} />}</button>
       </nav>
 
       <main className="container mini">
         <div className="celeb">
-          <span className="celeb-icon">🎉</span>
+          <span className="celeb-icon" style={{ display: 'flex', justifyContent: 'center' }}><StarIcon size={48} color="#FFD700" /></span>
           <h1>{t('summary.title') || 'Session Complete!'}</h1>
           <p>{t('summary.subtitle') || "Great job! You've completed your study session with good focus."}</p>
         </div>
 
         {/* STUDY DURATION */}
         <div className="card">
-          <div className="ctitle">⏱️ {t('summary.studyDuration') || 'Study Duration'}</div>
+          <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><TimerIcon size={20} /> {t('summary.studyDuration') || 'Study Duration'}</div>
           <div className="dur-center">
             <div className="dur-ring">
               <svg width="90" height="90" viewBox="0 0 90 90">
@@ -129,16 +130,16 @@ export default function SessionSummary() {
             </div>
           </div>
           <div className="tag-row">
-            <span className={`tag ${lastSession.status === 'done' ? 'green' : 'yellow'}`}>{lastSession.status === 'done' ? `✅ ${t('summary.tagFull') || 'Full Session Completed'}` : `⚠️ ${t('summary.tagPartial') || 'Partial Session'}`}</span>
-            <span className="tag blue">{lastSession.type === 'Pomodoro' ? `🍅 ${t('setup.pomodoro') || 'Pomodoro'}` : `✏️ ${t('setup.customDuration') || 'Custom'}`}</span>
+            <span className={`tag ${lastSession.status === 'done' ? 'green' : 'yellow'}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{lastSession.status === 'done' ? <><CheckIcon size={14}/> {t('summary.tagFull') || 'Full Session Completed'}</> : <><AlertTriangleIcon size={14}/> {t('summary.tagPartial') || 'Partial Session'}</>}</span>
+            <span className="tag blue" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{lastSession.type === 'Pomodoro' ? <><TomatoIcon size={14}/> {t('setup.pomodoro') || 'Pomodoro'}</> : <><EditIcon size={14}/> {t('setup.customDuration') || 'Custom'}</>}</span>
             <span className="tag blue">{lastSession.ambience}</span>
-            {lastSession.focusMode && <span className="tag green">🛡️ {t('summary.tagFmActive') || 'Focus Mode Active'}</span>}
+            {lastSession.focusMode && <span className="tag green" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldIcon size={14}/> {t('summary.tagFmActive') || 'Focus Mode Active'}</span>}
           </div>
         </div>
 
         {/* SESSION RESULT */}
         <div className="card">
-          <div className="ctitle">📋 {t('summary.sessionResult') || 'Session Result'}</div>
+          <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardIcon size={20} /> {t('summary.sessionResult') || 'Session Result'}</div>
           <div className="result-grid">
             <div className="rg-item"><div className="rg-n">{lastSession.score}%</div><div className="rg-l">{t('summary.focusScore') || 'Focus Score'}</div></div>
             <div className="rg-item"><div className="rg-n">{lastSession.distractions}x</div><div className="rg-l">{t('summary.distractionsPrevented') || 'Distractions Prevented'}</div></div>
@@ -148,48 +149,48 @@ export default function SessionSummary() {
             <div className="rd-row"><span className="rd-lbl">{t('summary.sessionNameLbl') || 'Session Name'}</span><span className="rd-val">{lastSession.name}</span></div>
             <div className="rd-row"><span className="rd-lbl">{t('summary.startTimeLbl') || 'Start Time'}</span><span className="rd-val">{lastSession.timeLabel}</span></div>
             <div className="rd-row"><span className="rd-lbl">{t('summary.totalDurationLbl') || 'Total Duration'}</span><span className="rd-val">{lastSession.duration} {t('setup.minutes')}</span></div>
-            <div className="rd-row"><span className="rd-lbl">{t('summary.methodLbl') || 'Method'}</span><span className="rd-val">{lastSession.type === 'Pomodoro' ? `🍅 ${t('setup.pomodoro')}` : `✏️ ${t('setup.customDuration')}`} ({lastSession.totalDuration}')</span></div>
+            <div className="rd-row"><span className="rd-lbl">{t('summary.methodLbl') || 'Method'}</span><span className="rd-val" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{lastSession.type === 'Pomodoro' ? <><TomatoIcon size={14} /> {t('setup.pomodoro')}</> : <><EditIcon size={14} /> {t('setup.customDuration')}</>} ({lastSession.totalDuration}')</span></div>
             <div className="rd-row"><span className="rd-lbl">{t('summary.ambienceLbl') || 'Ambience'}</span><span className="rd-val">{lastSession.ambience}</span></div>
-            <div className="rd-row"><span className="rd-lbl">{t('summary.statusLbl') || 'Status'}</span><span className="rd-val" style={{ color: 'var(--accent)' }}>{lastSession.status === 'done' ? `✅ ${t('summary.fullCompletion') || 'Full Completion'}` : `⚠️ ${t('summary.partialCompletion') || 'Partial Completion'}`}</span></div>
+            <div className="rd-row"><span className="rd-lbl">{t('summary.statusLbl') || 'Status'}</span><span className="rd-val" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>{lastSession.status === 'done' ? <><CheckIcon size={14} /> {t('summary.fullCompletion') || 'Full Completion'}</> : <><AlertTriangleIcon size={14} /> {t('summary.partialCompletion') || 'Partial Completion'}</>}</span></div>
           </div>
         </div>
 
         {/* PROGRESS UPDATE */}
         <div className="card">
-          <div className="ctitle">📈 {t('summary.progressUpdate') || 'Progress Update'}</div>
-          <div className="pu-item"><div className="pu-labels"><span>{(t('summary.dailyTarget') || 'Daily Target ({count} sessions)').replace('{count}', targetSessions)}</span><span style={{ color: dailyColor }}>{todaySessions.length} / {targetSessions} {todaySessions.length >= targetSessions ? '✅' : ''}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: dailyPct + '%', backgroundColor: dailyColor }}></div></div></div>
+          <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ChartIcon size={20} /> {t('summary.progressUpdate') || 'Progress Update'}</div>
+          <div className="pu-item"><div className="pu-labels"><span>{(t('summary.dailyTarget') || 'Daily Target ({count} sessions)').replace('{count}', targetSessions)}</span><span style={{ color: dailyColor, display: 'flex', alignItems: 'center', gap: '4px' }}>{todaySessions.length} / {targetSessions} {todaySessions.length >= targetSessions ? <CheckIcon size={14} /> : ''}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: dailyPct + '%', backgroundColor: dailyColor }}></div></div></div>
           <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalFocusWeek') || 'Total Focus This Week'}</span><span style={{ color: weekColor }}>{weekTotalHours} / {targetHours} {t('summary.hours') || 'hours'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: weekPct + '%', backgroundColor: weekColor }}></div></div></div>
           <div className="pu-item"><div className="pu-labels"><span>{t('summary.totalSessionsMonth') || 'Total Sessions This Month'}</span><span style={{ color: monthColor }}>{allSessions.length} / 60 {t('summary.sessions') || 'sessions'}</span></div><div className="pu-bar"><div className="pu-fill" style={{ width: monthPct + '%', backgroundColor: monthColor }}></div></div></div>
           <div className="pu-milestone">
             <span className="milestone" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FireIcon size={14}/> {todaySessions.length}-{t('summary.sessionDay') || 'Session Day!'}</span>
-            <span className="milestone">🎯 {todayAvgScore}% {t('summary.avgScore') || 'Average Score'}</span>
-            <span className="milestone">⭐ {lastSession.score}% {t('summary.thisSession') || 'This Session'}</span>
+            <span className="milestone" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><TargetIcon size={14} /> {todayAvgScore}% {t('summary.avgScore') || 'Average Score'}</span>
+            <span className="milestone" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><StarIcon size={14} /> {lastSession.score}% {t('summary.thisSession') || 'This Session'}</span>
           </div>
         </div>
 
         {/* INSIGHTS */}
         <div className="card">
-          <div className="ctitle">💡 {t('summary.sessionInsights') || 'Session Insights'}</div>
+          <div className="ctitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><LightbulbIcon size={20} /> {t('summary.sessionInsights') || 'Session Insights'}</div>
           <div className="ins-list">
-            <div className="ins"><div className="ins-ic">🎯</div><div className="ins-t">{t('summary.insight1').replace('{score}', lastSession.score).replace('{desc}', lastSession.score >= 90 ? (t('summary.insightExcellent')||'excellent!') : lastSession.score >= 70 ? (t('summary.insightGood')||'good!') : (t('summary.insightImprove')||'keep improving!')).replace('{dist}', lastSession.distractions)}</div></div>
-            <div className="ins"><div className="ins-ic">📈</div><div className="ins-t">{t('summary.insight2').replace('{min}', durationMins).replace('{avg}', weekAvgScore).replace('{count}', weekSessions.length)}</div></div>
-            <div className="ins"><div className="ins-ic">🌱</div><div className="ins-t">{t('summary.insight3').replace('{count}', todaySessions.length).replace('{target}', todaySessions.length >= targetSessions ? (t('summary.targetAchieved')||'Daily target achieved! 🎉') : (t('summary.targetMore')||`${targetSessions - todaySessions.length} more to reach your daily goal.`))}</div></div>
+            <div className="ins"><div className="ins-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TargetIcon size={16} /></div><div className="ins-t">{t('summary.insight1').replace('{score}', lastSession.score).replace('{desc}', lastSession.score >= 90 ? (t('summary.insightExcellent')||'excellent!') : lastSession.score >= 70 ? (t('summary.insightGood')||'good!') : (t('summary.insightImprove')||'keep improving!')).replace('{dist}', lastSession.distractions)}</div></div>
+            <div className="ins"><div className="ins-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChartIcon size={16} /></div><div className="ins-t">{t('summary.insight2').replace('{min}', durationMins).replace('{avg}', weekAvgScore).replace('{count}', weekSessions.length)}</div></div>
+            <div className="ins"><div className="ins-ic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LeafIcon size={16} /></div><div className="ins-t">{t('summary.insight3').replace('{count}', todaySessions.length).replace('{target}', todaySessions.length >= targetSessions ? (t('summary.targetAchieved')||'Daily target achieved!') : (t('summary.targetMore')||`${targetSessions - todaySessions.length} more to reach your daily goal.`))}</div></div>
           </div>
         </div>
 
         {/* SAVE PROMPT */}
         {!loading && !isAuthenticated && showSave && (
           <div className="save-prompt">
-            <h3>💾 {t('summary.savePromptTitle') || 'Save Session History?'}</h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><SaveIcon size={20} /> {t('summary.savePromptTitle') || 'Save Session History?'}</h3>
             <p>{t('summary.savePromptDesc') || 'Sign in or register for free to save session history, track long-term learning statistics, and get deeper personal insights.'}</p>
-            <button className="btn-save" onClick={() => navigate('/auth')}>🔐 {t('summary.saveBtn') || 'Sign In / Register to Save'}</button>
+            <button className="btn-save" onClick={() => navigate('/auth')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><LockIcon size={18} /> {t('summary.saveBtn') || 'Sign In / Register to Save'}</button>
             <a className="skip-link" onClick={() => setShowSave(false)}>{t('summary.skipBtn') || 'Skip, continue without saving'}</a>
           </div>
         )}
 
         <div className="cta-row">
-          <Link to="/session-setup" className="btn-next">▶ {t('summary.startNewBtn') || 'Start New Session'}</Link>
-          <Link to="/" className="btn-dash">🏠 {t('summary.backToDashboard') || 'Back to Dashboard'}</Link>
+          <Link to="/session-setup" className="btn-next" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><PlayIcon size={16} /> {t('summary.startNewBtn') || 'Start New Session'}</Link>
+          <Link to="/" className="btn-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><HomeIcon size={16} /> {t('summary.backToDashboard') || 'Back to Dashboard'}</Link>
         </div>
       </main>
     </>
